@@ -1,24 +1,64 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import SignIn from './components/SignIn';
+import SignUp from "./components/register";
+import Profile from './components/profile';
+import { ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+import { useState, useEffect } from 'react';
+import { auth } from './components/firebase';
+import HomePage from './components/HomePage';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+const Home = () => (
+  <div className='h-16 px-5 bg-red-500 flex items-center justify-between'>
+    <h2 className="text-white font-bold">Logo</h2>
+    <div className='flex gap-8'>
+      <h4 className="text-white cursor-pointer">Our Story</h4>
+      <h4 className="text-white cursor-pointer">Write</h4>
+      <Link to="/signin">
+        <h4 className='cursor-pointer text-white'>Sign In</h4>
+      </Link>
     </div>
+  </div>
+);
+
+const App = () => {
+  const [user, setUser] = useState(null); // Initialize with null
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/homepage" element={<HomePage />} />
+
+        <Route path="/signin" element={ user ? <Navigate to="/HomePage" /> :
+          <div className="flex justify-center items-center h-screen">
+            <div className="bg-white shadow-md rounded-lg p-8 w-96">
+              <SignIn />
+            </div>
+          </div>
+        } />
+        <Route path="/register" element={
+          <div className="flex justify-center items-center h-screen">
+            <div className="bg-white shadow-md rounded-lg p-8 w-96">
+              <SignUp />
+            </div>
+          </div>
+        } />
+        <Route path="/profile" element={<Profile />} />
+
+      </Routes>
+      <ToastContainer />
+    </Router>
   );
 }
 
