@@ -46,7 +46,7 @@ function Profile() {
           <h3 className="text-center mt-4">Welcome {userDetails.firstName} 🙏🙏</h3>
           <div className="text-center mt-2">
             <p>Email: {userDetails.email}</p>
-            <p>First Name: {userDetails.firstName}</p>
+            <p>FIRST Name: {userDetails.firstName}</p>
           </div>
           <button className="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700" onClick={handleLogout}>
             Logout
