@@ -1,14 +1,14 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link} from 'react-router-dom';
 import SignIn from './components/SignIn';
 import SignUp from "./components/register";
 import Profile from './components/profile';
 import { ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import { useState, useEffect } from 'react';
 import { auth } from './components/firebase';
 import HomePage from './components/HomePage';
 import AddPost from './components/AddPost';
+import CategoryPage from './components/CategoryPage';
 
 const Home = () => (
   <div className='h-16 px-5 bg-red-500 flex items-center justify-between'>
@@ -16,17 +16,19 @@ const Home = () => (
     <div className='flex gap-8'>
       <h4 className="text-white cursor-pointer">Our Story</h4>
       <Link to="/addpost">
-      <h4 className="text-</Link>white cursor-pointer">Write</h4>
+        <h4 className="text-white cursor-pointer">Write</h4>
       </Link>
       <Link to="/signin">
         <h4 className='cursor-pointer text-white'>Sign In</h4>
       </Link>
     </div>
   </div>
+
+  
 );
 
 const App = () => {
-  const [user, setUser] = useState(null); // Initialize with null
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -39,27 +41,22 @@ const App = () => {
 
   return (
     <Router>
+     
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/homepage" element={<HomePage />} />
-        <Route path="/addpost" element={<><AddPost />
-        <div className="flex justify-center items-center h-screen">
-          <div className="bg-white shadow-md rounded-lg p-8 w-96">
-
-          </div>
-        </div></>
+        <Route path="/addpost" element={<AddPost />} />
+        <Route path="/categorypage" element={<CategoryPage />} />
         
-      
-      } />
-
-
-        <Route path="/signin" element={ user ? <Navigate to="/HomePage" /> :
-          <div className="flex justify-center items-center h-screen">
-            <div className="bg-white shadow-md rounded-lg p-8 w-96">
-              <SignIn />
+        <Route path="/signin" element={
+         
+            <div className="flex justify-center items-center h-screen">
+              <div className="bg-white shadow-md rounded-lg p-8 w-96">
+                <SignIn />
+              </div>
             </div>
-          </div>
-        } />
+        }/>
+        
         <Route path="/register" element={
           <div className="flex justify-center items-center h-screen">
             <div className="bg-white shadow-md rounded-lg p-8 w-96">
@@ -68,7 +65,6 @@ const App = () => {
           </div>
         } />
         <Route path="/profile" element={<Profile />} />
-
       </Routes>
       <ToastContainer />
     </Router>

@@ -19,10 +19,11 @@ function SignInwithGoogle() {
         toast.success("User logged in Successfully", {
           position: "top-center",
         });
-        window.location.href = "/profile";
+        window.location.href = "/categorypage";
       }
     });
   }
+
   return (
     <div>
       <p className="continue-p">--Or continue with--</p>
@@ -30,9 +31,14 @@ function SignInwithGoogle() {
         style={{ display: "flex", justifyContent: "center", cursor: "pointer" }}
         onClick={googleLogin}
       >
-        <img src={require("../google.png")} width={"60%"} />
+        <img
+          src={require("../google.png")}
+          width={"60%"}
+          alt="Sign in with Google" // Added alt attribute
+        />
       </div>
     </div>
   );
 }
+
 export default SignInwithGoogle;

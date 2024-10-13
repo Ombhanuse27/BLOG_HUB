@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { loadAllCategories } from "../services/category-service";
 import JoditEditor from "jodit-react";
 import { createPost as doCreatePost, uploadPostImage } from "../services/post-service";
-import { getCurrentUserDetail } from "../auth";
 import { toast } from "react-toastify";
+import { auth, db } from './firebase'; 
+import { doc, getDoc } from "firebase/firestore"; 
 
 const AddPost = () => {
   const editor = useRef(null);
@@ -17,63 +17,88 @@ const AddPost = () => {
   const [image, setImage] = useState(null);
 
   useEffect(() => {
-    setUser(getCurrentUserDetail());
-    loadAllCategories()
-      .then((data) => {
-        console.log(data);
-        setCategories(data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const currentUser = auth.currentUser;
+    setUser(currentUser);
+
+    const fetchFollowedTopics = async () => {
+      if (currentUser) {
+        const userId = currentUser.uid; 
+        const userDocRef = doc(db, "users", userId);
+        
+        try {
+          const docSnapshot = await getDoc(userDocRef);
+          if (docSnapshot.exists()) {
+            const followedTopics = docSnapshot.data().followedTopics || [];
+            const followedCategories = followedTopics.map((topic, index) => ({
+              categoryId: `followed-${index}`, // Use a dynamic category ID
+              categoryTitle: topic,
+            }));
+            setCategories(followedCategories);
+          } else {
+            console.log("No followed topics found for the user.");
+          }
+        } catch (error) {
+          console.error("Error fetching followed topics:", error);
+          toast.error("Error fetching followed topics.");
+        }
+      }
+    };
+
+    fetchFollowedTopics();
   }, []);
 
   const fieldChanged = (event) => {
     setPost({ ...post, [event.target.name]: event.target.value });
   };
 
-  const contentFieldChanaged = (data) => {
+  const contentFieldChanged = (data) => {
     setPost({ ...post, content: data });
   };
 
   const createPost = (event) => {
     event.preventDefault();
+
     if (post.title.trim() === "") {
-      toast.error("Post title is required !!");
+      toast.error("Post title is required!");
       return;
     }
 
     if (post.content.trim() === "") {
-      toast.error("Post content is required !!");
+      toast.error("Post content is required!");
       return;
     }
 
     if (post.categoryId === "") {
-      toast.error("Select some category !!");
+      toast.error("Select a category!");
       return;
     }
 
-    post["userId"] = user.id;
+    // Attach the user ID to the post object
+    post.userId = user.uid; 
+
     doCreatePost(post)
       .then((data) => {
-        uploadPostImage(image, data.postId)
-          .then((data) => {
-            toast.success("Image Uploaded !!");
-          })
-          .catch((error) => {
-            toast.error("Error in uploading image");
-            console.log(error);
-          });
-
-        toast.success("Post Created !!");
+        if (image) {
+          uploadPostImage(image, data.postId)
+            .then(() => {
+              toast.success("Image Uploaded Successfully!");
+            })
+            .catch((error) => {
+              toast.error("Error uploading image: " + error.message);
+              console.log(error);
+            });
+        }
+        toast.success("Post Created Successfully!");
         setPost({
           title: "",
           content: "",
           categoryId: "",
         });
+        setImage(null); // Reset the image
       })
       .catch((error) => {
-        toast.error("Post not created due to some error !!");
+        toast.error("Post not created due to an error: " + error.message);
+        console.log(error);
       });
   };
 
@@ -108,7 +133,7 @@ const AddPost = () => {
           <JoditEditor
             ref={editor}
             value={post.content}
-            onChange={contentFieldChanaged}
+            onChange={contentFieldChanged}
             className="block w-full border border-gray-300 rounded-lg"
           />
         </div>
@@ -135,20 +160,18 @@ const AddPost = () => {
             onChange={fieldChanged}
             className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
           >
-            {/*  <option disabled value={0}>
+            <option disabled value="">
               -- Select category --
-            </option> */ }
-
-            <option>React</option>
-            <option>Node</option>
-            <option>Express</option>
-            <option>JavaScript</option>
-              
-            {categories.map((category) => (
-              <option value={category.categoryId} key={category.categoryId}>
-                {category.categoryTitle}
-              </option>
-            ))}
+            </option>
+            {categories.length > 0 ? (
+              categories.map((category) => (
+                <option value={category.categoryId} key={category.categoryId}>
+                  {category.categoryTitle}
+                </option>
+              ))
+            ) : (
+              <option disabled>No categories available</option> 
+            )}
           </select>
         </div>
 

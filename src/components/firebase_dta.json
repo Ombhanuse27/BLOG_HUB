@@ -1,0 +1,19 @@
+{
+  "posts": {
+    "post_1633543000": {
+      "title": "First Post",
+      "content": "This is the content of the first post",
+      "categoryId": "tech",
+      "userId": "user123",
+      "timestamp": "2023-10-10T10:00:00Z",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/your-app-id.appspot.com/o/banners%2Fbanner_name_timestamp.jpg"
+    },
+    "post_1633544000": {
+      "title": "Second Post",
+      "content": "This is the content of the second post",
+      "categoryId": "data-science",
+      "userId": "user456",
+      "timestamp": "2023-10-10T10:30:00Z"
+    }
+  }
+}

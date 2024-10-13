@@ -2,21 +2,25 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { auth } from "./firebase";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for programmatic navigation
+import "react-toastify/dist/ReactToastify.css";
+
 import SignInwithGoogle from "./signInWIthGoogle";
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate(); // Initialize the navigate function
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("User logged in Successfully");
-      window.location.href = "/HomePage";
       toast.success("User logged in Successfully", {
         position: "top-center",
       });
+      navigate("/CategoryPage"); // Use navigate for client-side routing
     } catch (error) {
       console.log(error.message);
       toast.error(error.message, {

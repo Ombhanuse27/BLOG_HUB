@@ -4,20 +4,24 @@ import { doc, getDoc } from "firebase/firestore";
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
+
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
       console.log(user);
 
-      const docRef = doc(db, "Users", user.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setUserDetails(docSnap.data());
-        console.log(docSnap.data());
-      } else {
-        console.log("User is not logged in");
+      if (user) {
+        const docRef = doc(db, "Users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUserDetails(docSnap.data());
+          console.log(docSnap.data());
+        } else {
+          console.log("User is not logged in");
+        }
       }
     });
   };
+
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -41,6 +45,7 @@ function Profile() {
               src={userDetails.photo}
               width={"40%"}
               className="rounded-full"
+              alt={`${userDetails.firstName}'s profile`} // Modified alt text
             />
           </div>
           <h3 className="text-center mt-4">Welcome {userDetails.firstName} 🙏🙏</h3>
@@ -48,7 +53,10 @@ function Profile() {
             <p>Email: {userDetails.email}</p>
             <p>FIRST Name: {userDetails.firstName}</p>
           </div>
-          <button className="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700" onClick={handleLogout}>
+          <button
+            className="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+            onClick={handleLogout}
+          >
             Logout
           </button>
         </>

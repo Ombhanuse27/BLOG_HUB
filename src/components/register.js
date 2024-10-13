@@ -1,8 +1,8 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { auth, db } from "./firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
-import { toast } from "react-toastify";
+import { auth, db } from "./firebase"; // Ensure correct import
+import { toast } from "react-toastify"; // Import toast for notifications
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -13,23 +13,33 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      const user = auth.currentUser;
-      console.log(user);
-      if (user) {
-        await setDoc(doc(db, "Users", user.uid), {
-          email: user.email,
-          firstName: fname,
-          lastName: lname,
-          photo: "",
-        });
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Define default categories to be stored in Firestore
+      const defaultCategories = [
+        "Data Science",
+        "Self Improvement",
+        "Technology",
+        "Writing",
+        "Relationships"
+      ];
+
+      // Create user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        firstName: fname,
+        lastName: lname,
+        followedTopics: [], // Initially no topics followed
+        categories: defaultCategories // Add categories field
+      });
+
       console.log("User Registered Successfully!!");
       toast.success("User Registered Successfully!!", {
         position: "top-center",
       });
     } catch (error) {
-      console.log(error.message);
+      console.error(error.message);
       toast.error(error.message, {
         position: "bottom-center",
       });
