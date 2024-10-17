@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import userIcon from '../img/user.png';
 import edit from '../img/edit.png';
 import logout from '../img/log-out.png';
-import { auth, rtdb, db } from './firebase'; // Import the services from your firebase config
-import { getDoc, doc } from "firebase/firestore"; // Firestore imports for followed topics
-import { ref, onValue } from "firebase/database"; // Realtime Database imports for posts
+import { auth, rtdb, db } from './firebase';
+import { getDoc, doc } from "firebase/firestore";
+import { ref, onValue } from "firebase/database";
 
 function HomePage() {
   const [open, setOpen] = useState(false);
@@ -15,24 +15,21 @@ function HomePage() {
   const [selectedContent, setSelectedContent] = useState(""); 
   let menuRef = useRef();
 
-  // Fetch followed topics from Firestore
   useEffect(() => {
     const fetchFollowedTopics = async () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
         const userId = currentUser.uid;
-        const userDocRef = doc(db, `users/${userId}`); // Use Firestore db here
+        const userDocRef = doc(db, `users/${userId}`);
         
         try {
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
             const data = userDoc.data();
             const topics = data.followedTopics || [];
-            console.log("Followed topics found:", topics);
-            setFollowedTopics(topics); 
+            setFollowedTopics(topics);
           } else {
-            console.log("No followed topics found.");
-            setFollowedTopics([]); // Set empty if no topics are found
+            setFollowedTopics([]);
           }
         } catch (error) {
           console.error("Error fetching followed topics:", error);
@@ -45,10 +42,9 @@ function HomePage() {
     fetchFollowedTopics();
   }, []); 
 
-  // Fetch posts based on selected category from Realtime Database
   useEffect(() => {
     const fetchPosts = () => {
-      const postsRef = ref(rtdb, 'posts'); // Use Realtime Database for fetching posts
+      const postsRef = ref(rtdb, 'posts');
       onValue(postsRef, (snapshot) => {
         const allPosts = snapshot.val();
         const categoryPosts = [];
@@ -74,12 +70,11 @@ function HomePage() {
     if (selectedCategory) {
       fetchPosts();
     } else {
-      setPosts([]); // Clear posts if no category is selected
-      setSelectedContent(""); // Clear the selected content when no category is selected
+      setPosts([]);
+      setSelectedContent("");
     }
   }, [selectedCategory]);
 
-  // Handle dropdown close
   useEffect(() => {
     const handler = (e) => {
       if (!menuRef.current.contains(e.target)) {
@@ -92,16 +87,24 @@ function HomePage() {
     };
   }, []); 
 
-  // Handle logout
   async function handleLogout() {
     try {
       await auth.signOut();
       window.location.href = "/SignIn"; 
-      console.log("User logged out successfully!");
     } catch (error) {
       console.error("Error logging out:", error.message);
     }
   }
+
+  // Function to format the timestamp
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
 
   return (
     <div>
@@ -136,7 +139,6 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Category Navigation */}
       <nav className="flex space-x-4 bg-gray-200 p-4">
         {followedTopics.length ? (
           followedTopics.map((topic) => (
@@ -155,17 +157,27 @@ function HomePage() {
         )}
       </nav>
 
-      {/* Display Selected Content */}
       {selectedContent && <div className="p-4 bg-gray-100 text-lg">{selectedContent}</div>}
 
-      {/* Posts Display */}
       <div className="p-6 bg-gray-100">
         {posts.length ? (
           posts.map((post) => (
-            <div key={post.id} className="mb-4 p-4 bg-white shadow-md rounded">
-              <h3 className="text-xl font-bold">{post.title}</h3>
-              <p className="text-gray-700">{post.content}</p>
-              <p className="text-gray-500">{post.category.categoryTitle}</p> 
+            <div key={post.id} className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start">
+              <div className="flex items-start">
+                <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
+                <div>
+                  <p className="font-bold">{post.user || "Unknown User"}</p>
+                  <h3 className="text-xl font-bold">{post.title}</h3>
+                  <p className="text-gray-500">{formatDate(post.timestamp)}</p> {/* Display formatted date */}
+                </div>
+              </div>
+              <div>
+                <img 
+                  src={post.bannerUrl} 
+                  alt={post.title} 
+                  className="w-64 h-32 object-cover rounded" // Adjust the size for post banner
+                />
+              </div>
             </div>
           ))
         ) : (
