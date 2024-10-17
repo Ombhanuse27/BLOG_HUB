@@ -1,11 +1,11 @@
-// HomePage.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import userIcon from '../img/user.png';
 import edit from '../img/edit.png';
 import logout from '../img/log-out.png';
-import { auth, rtdb } from './firebase'; // Use rtdb for Realtime Database
-import { ref, onValue } from "firebase/database"; 
+import { auth, rtdb, db } from './firebase'; // Import the services from your firebase config
+import { getDoc, doc } from "firebase/firestore"; // Firestore imports for followed topics
+import { ref, onValue } from "firebase/database"; // Realtime Database imports for posts
 
 function HomePage() {
   const [open, setOpen] = useState(false);
@@ -15,38 +15,46 @@ function HomePage() {
   const [selectedContent, setSelectedContent] = useState(""); 
   let menuRef = useRef();
 
-  // Fetch followed topics
+  // Fetch followed topics from Firestore
   useEffect(() => {
-    const fetchFollowedTopics = () => {
+    const fetchFollowedTopics = async () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
         const userId = currentUser.uid;
-        const userRef = ref(rtdb, `users/${userId}`);  // Use rtdb here
+        const userDocRef = doc(db, `users/${userId}`); // Use Firestore db here
         
-        onValue(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.val();
+        try {
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
             const topics = data.followedTopics || [];
+            console.log("Followed topics found:", topics);
             setFollowedTopics(topics); 
+          } else {
+            console.log("No followed topics found.");
+            setFollowedTopics([]); // Set empty if no topics are found
           }
-        });
+        } catch (error) {
+          console.error("Error fetching followed topics:", error);
+        }
+      } else {
+        console.log("User is not logged in.");
       }
     };
 
     fetchFollowedTopics();
   }, []); 
 
-  // Fetch posts based on selected category
+  // Fetch posts based on selected category from Realtime Database
   useEffect(() => {
     const fetchPosts = () => {
-      const postsRef = ref(rtdb, 'posts');  // Use rtdb here
+      const postsRef = ref(rtdb, 'posts'); // Use Realtime Database for fetching posts
       onValue(postsRef, (snapshot) => {
         const allPosts = snapshot.val();
         const categoryPosts = [];
 
         if (allPosts) {
           for (let key in allPosts) {
-            // Check if the post's category title matches the selected category
             if (allPosts[key].category && allPosts[key].category.categoryTitle === selectedCategory) {
               categoryPosts.push({
                 id: key,
@@ -63,7 +71,6 @@ function HomePage() {
       });
     };
 
-    // Only fetch posts if a category is selected
     if (selectedCategory) {
       fetchPosts();
     } else {
@@ -83,7 +90,7 @@ function HomePage() {
     return () => {
       document.removeEventListener("mousedown", handler);
     };
-  }, []); // Add empty dependency array to avoid multiple handlers
+  }, []); 
 
   // Handle logout
   async function handleLogout() {
