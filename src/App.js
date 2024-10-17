@@ -9,6 +9,9 @@ import { auth } from './components/firebase';
 import HomePage from './components/HomePage';
 import AddPost from './components/AddPost';
 import CategoryPage from './components/CategoryPage';
+import { BackgroundBeamsWithCollisionDemo } from './components/BackgroundBeamsWithCollisionDemo';
+import { BackgroundBeamsWithCollision } from './components/ui/background-beams-with-collision';
+import PostPage from './components/PostPage';
 
 const Home = () => (
   <div className='h-16 px-5 bg-red-500 flex items-center justify-between'>
@@ -43,9 +46,12 @@ const App = () => {
     <Router>
      
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<div><Home/><BackgroundBeamsWithCollisionDemo/></div>} />
+
+       
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/addpost" element={<AddPost />} />
+        <Route path='/postpage' element={<PostPage/>}/>
         <Route path="/categorypage" element={<CategoryPage />} />
         
         <Route path="/signin" element={

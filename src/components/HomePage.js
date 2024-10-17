@@ -1,31 +1,35 @@
-import React, { useState, useRef, useEffect } from "react";
+// HomePage.js
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import userIcon from '../img/user.png';
 import edit from '../img/edit.png';
 import logout from '../img/log-out.png';
-import { auth, db } from './firebase'; 
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore"; 
+import { auth, rtdb } from './firebase'; // Use rtdb for Realtime Database
+import { ref, onValue } from "firebase/database"; 
 
 function HomePage() {
   const [open, setOpen] = useState(false);
   const [followedTopics, setFollowedTopics] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(""); 
   const [posts, setPosts] = useState([]); 
+  const [selectedContent, setSelectedContent] = useState(""); 
   let menuRef = useRef();
 
   // Fetch followed topics
   useEffect(() => {
-    const fetchFollowedTopics = async () => {
+    const fetchFollowedTopics = () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
         const userId = currentUser.uid;
-        const userDocRef = doc(db, "users", userId); 
-        const docSnapshot = await getDoc(userDocRef); 
-
-        if (docSnapshot.exists()) {
-          const topics = docSnapshot.data().followedTopics || [];
-          setFollowedTopics(topics); 
-        }
+        const userRef = ref(rtdb, `users/${userId}`);  // Use rtdb here
+        
+        onValue(userRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            const topics = data.followedTopics || [];
+            setFollowedTopics(topics); 
+          }
+        });
       }
     };
 
@@ -34,16 +38,38 @@ function HomePage() {
 
   // Fetch posts based on selected category
   useEffect(() => {
-    const fetchPosts = async () => {
-      if (selectedCategory) {
-        const q = query(collection(db, "posts"), where("category", "==", selectedCategory));
-        const querySnapshot = await getDocs(q);
-        const categoryPosts = querySnapshot.docs.map(doc => doc.data());
-        setPosts(categoryPosts); 
-      }
+    const fetchPosts = () => {
+      const postsRef = ref(rtdb, 'posts');  // Use rtdb here
+      onValue(postsRef, (snapshot) => {
+        const allPosts = snapshot.val();
+        const categoryPosts = [];
+
+        if (allPosts) {
+          for (let key in allPosts) {
+            // Check if the post's category title matches the selected category
+            if (allPosts[key].category && allPosts[key].category.categoryTitle === selectedCategory) {
+              categoryPosts.push({
+                id: key,
+                ...allPosts[key],
+              });
+            }
+          }
+        }
+
+        setPosts(categoryPosts);
+        setSelectedContent(`Displaying content for category: ${selectedCategory}`);
+      }, (error) => {
+        console.error("Error fetching posts:", error);
+      });
     };
 
-    fetchPosts();
+    // Only fetch posts if a category is selected
+    if (selectedCategory) {
+      fetchPosts();
+    } else {
+      setPosts([]); // Clear posts if no category is selected
+      setSelectedContent(""); // Clear the selected content when no category is selected
+    }
   }, [selectedCategory]);
 
   // Handle dropdown close
@@ -57,7 +83,7 @@ function HomePage() {
     return () => {
       document.removeEventListener("mousedown", handler);
     };
-  });
+  }, []); // Add empty dependency array to avoid multiple handlers
 
   // Handle logout
   async function handleLogout() {
@@ -122,6 +148,9 @@ function HomePage() {
         )}
       </nav>
 
+      {/* Display Selected Content */}
+      {selectedContent && <div className="p-4 bg-gray-100 text-lg">{selectedContent}</div>}
+
       {/* Posts Display */}
       <div className="p-6 bg-gray-100">
         {posts.length ? (
@@ -129,7 +158,7 @@ function HomePage() {
             <div key={post.id} className="mb-4 p-4 bg-white shadow-md rounded">
               <h3 className="text-xl font-bold">{post.title}</h3>
               <p className="text-gray-700">{post.content}</p>
-              <p className="text-gray-500">{post.category}</p>
+              <p className="text-gray-500">{post.category.categoryTitle}</p> 
             </div>
           ))
         ) : (

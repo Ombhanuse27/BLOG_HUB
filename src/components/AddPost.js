@@ -1,28 +1,62 @@
 import { useState, useEffect, useRef } from "react";
 import JoditEditor from "jodit-react";
-import { createPost as doCreatePost, uploadPostImage } from "../services/post-service";
 import { toast } from "react-toastify";
-import { auth, db } from './firebase'; 
+import { auth, db, rtdb } from './firebase'; // import Realtime Database
 import { doc, getDoc } from "firebase/firestore"; 
+import { ref as dbRef, set } from "firebase/database"; // For Realtime Database
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"; // For Firebase Storage
 
 const AddPost = () => {
   const editor = useRef(null);
   const [categories, setCategories] = useState([]);
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(null);  // User state
   const [post, setPost] = useState({
     title: "",
     content: "",
-    categoryId: "",
+    category: "",
   });
   const [image, setImage] = useState(null);
 
+  // Define the getUserDetails function directly here
+  const getUserDetails = async () => {
+    return new Promise((resolve, reject) => {
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          try {
+            const docRef = doc(db, "Users", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              resolve(docSnap.data());
+            } else {
+              reject("User data not found.");
+            }
+          } catch (error) {
+            reject("Error fetching user data: " + error.message);
+          }
+        } else {
+          reject("User is not logged in.");
+        }
+      });
+    });
+  };
+
   useEffect(() => {
-    const currentUser = auth.currentUser;
-    setUser(currentUser);
+    const fetchUser = async () => {
+      try {
+        const userDetails = await getUserDetails();  // Fetch user details
+        setUser(userDetails);  // Set user data
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        toast.error("Error fetching user details.");
+      }
+    };
+
+    fetchUser();
 
     const fetchFollowedTopics = async () => {
+      const currentUser = auth.currentUser;
       if (currentUser) {
-        const userId = currentUser.uid; 
+        const userId = currentUser.uid;
         const userDocRef = doc(db, "users", userId);
         
         try {
@@ -55,51 +89,88 @@ const AddPost = () => {
     setPost({ ...post, content: data });
   };
 
-  const createPost = (event) => {
+  const createPost = async (event) => {
     event.preventDefault();
-
+  
     if (post.title.trim() === "") {
       toast.error("Post title is required!");
       return;
     }
-
+  
     if (post.content.trim() === "") {
       toast.error("Post content is required!");
       return;
     }
-
-    if (post.categoryId === "") {
+  
+    if (post.category === "") {
       toast.error("Select a category!");
       return;
     }
-
-    // Attach the user ID to the post object
-    post.userId = user.uid; 
-
-    doCreatePost(post)
-      .then((data) => {
-        if (image) {
-          uploadPostImage(image, data.postId)
-            .then(() => {
-              toast.success("Image Uploaded Successfully!");
-            })
-            .catch((error) => {
-              toast.error("Error uploading image: " + error.message);
-              console.log(error);
-            });
-        }
-        toast.success("Post Created Successfully!");
-        setPost({
-          title: "",
-          content: "",
-          categoryId: "",
-        });
-        setImage(null); // Reset the image
-      })
-      .catch((error) => {
-        toast.error("Post not created due to an error: " + error.message);
-        console.log(error);
+  
+    // Generate a unique post ID using timestamp
+    const postId = `post_${Date.now()}`;
+  
+    // Fetch the user's first name and last name from Firestore
+    let fullName = "unknown_user"; // Default value
+    try {
+      if (user) {
+        const firstName = user.firstName || "";
+        const lastName = user.lastName || "";
+        fullName = `${firstName} ${lastName}`.trim(); // Combine first and last name
+      }
+    } catch (error) {
+      console.error("Error fetching full name:", error);
+      toast.error("Error fetching user name.");
+    }
+  
+    // Include a timestamp
+    const timestamp = new Date().toISOString();
+  
+    // Prepare the post object to store in Realtime Database
+    const newPost = {
+      title: post.title,
+      content: post.content,
+      category: {
+        categoryId: post.category,
+        categoryTitle: categories.find(cat => cat.categoryId === post.category)?.categoryTitle || "Unknown",
+      },
+      userId: auth.currentUser?.uid || 'unknown',  // Ensure we have userId
+      user: fullName,  // Correctly retrieved full name
+      timestamp: timestamp,
+    };
+  
+    try {
+      // If an image is selected, upload it to Firebase Storage
+      if (image) {
+        const storage = getStorage();
+        const bannerRef = storageRef(storage, `banners/banner_${postId}_${Date.now()}`);
+  
+        // Upload the image
+        await uploadBytes(bannerRef, image);
+  
+        // Get the download URL of the uploaded image
+        const bannerUrl = await getDownloadURL(bannerRef);
+        newPost.bannerUrl = bannerUrl;
+      }
+  
+      // Save the post data to Firebase Realtime Database
+      const postRef = dbRef(rtdb, `posts/${postId}`);
+      await set(postRef, newPost);
+  
+      toast.success("Post Created Successfully!");
+  
+      // Reset the form
+      setPost({
+        title: "",
+        content: "",
+        category: "",
       });
+      setImage(null); // Reset the image
+  
+    } catch (error) {
+      toast.error("Post not created due to an error: " + error.message);
+      console.error("Error adding post:", error); // Log the error for debugging
+    }
   };
 
   const handleFileChange = (event) => {
@@ -109,7 +180,7 @@ const AddPost = () => {
   return (
     <div className="max-w-5xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg">
       <div className="p-5 border-b mb-4">
-        <h3 className="text-xl font-bold text-gray-700">What’s going on in your mind?</h3>
+        <h3 className="text-xl font-bold text-gray-700">What's going on in your mind?</h3>
       </div>
       <form onSubmit={createPost} className="space-y-6">
         <div className="space-y-2">
@@ -121,6 +192,7 @@ const AddPost = () => {
             id="title"
             placeholder="Enter your post title here"
             name="title"
+            value={post.title}
             onChange={fieldChanged}
             className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
           />
@@ -156,7 +228,8 @@ const AddPost = () => {
           </label>
           <select
             id="category"
-            name="categoryId"
+            name="category"
+            value={post.category}
             onChange={fieldChanged}
             className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
           >
@@ -189,7 +262,7 @@ const AddPost = () => {
               setPost({
                 title: "",
                 content: "",
-                categoryId: "",
+                category: "",
               })
             }
           >
