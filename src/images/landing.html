@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Landing Page</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            background-color: antiquewhite;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: antiquewhite;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .navbar ul li {
+            display: inline;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        /* Landing Section */
+        .landing {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px;
+        }
+        .landing3 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+            
+        }
+
+        .left-content {
+            width: 50%;
+        }
+
+        .left-content h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .left-content p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .left-content h2 {
+            font-size: 1.8em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .left-content .extra-text {
+            font-size: 1em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .left-content button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .left-content button:hover {
+            background-color: #45a049;
+        }
+
+        /* Gallery of videos */
+        .gallery {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chef-video {
+            width: 30%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+
+        .divider {
+            width: 4px;
+            height: 800px;
+            background: linear-gradient(to bottom, #4CAF50, #8BC34A);
+            margin: 0 20px;
+        }
+
+        .image-container {
+            border-radius: 5%;
+            width: 50%;
+            position: relative;
+            overflow: hidden;
+            height: 800px;
+        }
+        .image-container3 {
+            border-radius: 5%;
+            width: 100%; /* Full width */
+            height: 500px; /* Set height for the image container */
+            position: relative;
+            overflow: hidden; /* Hide overflow for transitions */
+            margin-bottom: 40px; /* Add margin between sections */
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .left-content3 {
+            text-align: center; /* Center align text */
+            max-width: 800px; /* Set max width for content */
+        }
+
+
+        .image-container img.active {
+            opacity: 1;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f8f8;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+
+
+
+        /* Footer*/
+        .footer {
+            background-color: #2c3e50; /* Dark background color */
+            color: #ecf0f1; /* Light text color */
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-section {
+            margin: 20px;
+            flex: 1;
+            min-width: 220px; /* Adjust minimum width for responsiveness */
+        }
+        
+        .footer-section h2 {
+            margin-bottom: 15px;
+            font-size: 1.6em;
+            color: #4CAF50; /* Accent color for headings */
+        }
+        
+        .footer-section p {
+            line-height: 1.5;
+        }
+        
+        .footer-section ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .footer-section ul li {
+            margin: 10px 0;
+        }
+        
+        .footer-section a {
+            color: #ecf0f1; /* Link color */
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section a:hover {
+            color: #4CAF50; /* Change link color on hover */
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .social-icons img {
+            width: 28px; /* Adjust icon size */
+            height: 28px;
+            transition: transform 0.3s; /* Animation for hover effect */
+        }
+        
+        .social-icons img:hover {
+            transform: scale(1.1); /* Scale effect on hover */
+        }
+        
+        .footer-bottom {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+
+
+    </style>
+</head>
+<body>
+
+    <!-- Navbar Section -->
+    <div class="navbar">
+        <div class="logo">
+            <h2>My Blog</h2>
+        </div>
+        <ul>
+            <!-- <li><a href="#"></a></li> -->
+            <li><a href="#">Sign in</a></li>
+            <li><a href="#">Sign up</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Landing Section -->
+    <div class="landing">
+        <div class="left-content">
+            <h1>A Passionate Blogging Experience Awaits</h1>
+            <p>Discover delicious recipes, insightful posts, and more in our unique categories, crafted by passionate bloggers like you. Share your passion and inspire others.</p>
+            
+            <!-- Gallery of videos -->
+            <div class="gallery">
+                <video src="cooking.mp4" muted loop class="chef-video"></video>
+                <video src="frying.mp4" muted loop class="chef-video"></video>
+                <video src="vegies.mp4" muted loop class="chef-video"></video>
+            </div>
+
+            <!-- Subtitle and extra text between videos and button -->
+            <h2>More Than Just Blogging</h2>
+            <p class="extra-text">Join our community of writers and share your unique voice with the world. We offer insightful tips, exciting categories, and more to help you on your blogging journey.</p>
+
+            <button >Explore More</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="image-container" id="imageSlider2">
+            <img src="m1.jpg" alt="Image 1" class="active">
+            <img src="m2.jpg" alt="Image 2">
+            <img src="m3.jpg" alt="Image 3">
+            <img src="m4.jpg" alt="Image 4">
+            <img src="m5.jpg" alt="Image 5">
+            <img src="m6.jpg" alt="Image 6">
+        </div>
+    </div>
+
+    <!-- Second Section -->
+    <div class="landing">
+        
+        <div class="image-container" id="imageSlider1">
+            <img src="jai.s.webp" alt="Image 1" class="active">
+            <img src="g2.jpg" alt="Image 2">
+            <img src="g3.jpg" alt="Image 3">
+            <img src="g4.jpg" alt="Image 4">
+            <img src="g5.jpg" alt="Image 5">
+            <img src="g6.jpg" alt="Image 6">
+        </div>
+        <div class="divider"></div>
+
+        <div class="left-content3">
+            <h1>A Journey Through Culinary Delights and Inspiring Stories</h1>
+            <p>Explore a vibrant world of flavors and creativity with passionate bloggers sharing their favorite recipes and unique perspectives. Whether you're a seasoned cook or a beginner, our curated categories have something for everyone. Join us in celebrating the joy of cooking and the art of storytelling!</p>
+            
+            <!-- Gallery of videos -->
+            <div class="gallery">
+                <video src="central bucharest.mp4" muted loop class="chef-video"></video>
+                <video src="news.mp4" muted loop class="chef-video"></video>
+                <video src="whether.mp4" muted loop class="chef-video"></video>
+            </div>
+
+            <h2>More Than Just Blogging</h2>
+            <p class="extra-text">Join our community of writers and share your unique voice with the world. We offer insightful tips, exciting categories, and more to help you on your blogging journey.</p>
+
+            <button>Explore More</button>
+        </div>
+    </div>
+
+    <div class="landing3">
+        <div class="image-container3" id="imageSlider">
+            <img src="s1.jpg" alt="Image 1" class="active">
+            <img src="s2.jpg" alt="Image 2">
+            <img src="s3.jpg" alt="Image 3">
+            <img src="s4.jpg" alt="Image 4">
+            <img src="s5.jpg" alt="Image 5">
+            <img src="s6.jpg" alt="Image 6">
+        </div>
+
+        <div class="left-content ">
+            <h1>A Journey Through Culinary Delights and Inspiring Stories</h1>
+            <p>Explore a vibrant world of flavors and creativity with passionate bloggers sharing their favorite recipes and unique perspectives. Whether you're a seasoned cook or a beginner, our curated categories have something for everyone. Join us in celebrating the joy of cooking and the art of storytelling!</p>
+            
+            <!-- Gallery of videos -->
+            <div class="gallery">
+                <video src="chess.mp4" muted loop class="chef-video"></video>
+                <video src="cr7.mp4" muted loop class="chef-video"></video>
+                <video src="sachin.mp4" muted loop class="chef-video"></video>
+            </div>
+
+            <h2>More Than Just Blogging</h2>
+            <p class="extra-text">Join our community of writers and share your unique voice with the world. We offer insightful tips, exciting categories, and more to help you on your blogging journey.</p>
+
+            <button>Explore More</button>
+        </div>
+    </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section about">
+                <h2>About Us</h2>
+                <p>We are a passionate community of bloggers sharing unique recipes, stories, and insights. Join us on our journey to inspire others through food and creativity!</p>
+            </div>
+    
+            <div class="footer-section links">
+                <h2>Quick Links</h2>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Categories</a></li>
+                    <li><a href="#">Write</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+    
+            <div class="footer-section social">
+                <h2>Follow Us</h2>
+                <div class="social-icons">
+                    <a href="#"><img src="facebook.png" alt="Facebook"></a>
+                    <a href="#"><img src="twitter.png" alt="Twitter"></a>
+                    <a href="#"><img src="instagram.png" alt="Instagram"></a>
+                    <a href="#"><img src="youtube.png" alt="YouTube"></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 My Blog. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Function to initialize the image slider
+        function initImageSlider(sliderId) {
+            const images = document.querySelectorAll(`#${sliderId} img`);
+            let currentIndex = 0;
+
+            function changeImage() {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % images.length;
+                images[currentIndex].classList.add('active');
+            }
+
+            setInterval(changeImage, 5000); // Change image every 5 seconds
+        }
+
+        // Initialize both sliders
+        initImageSlider('imageSlider1');
+        initImageSlider('imageSlider2');
+
+        // Video playback control
+        const videos = document.querySelectorAll('.chef-video');
+
+        videos.forEach(video => {
+            video.addEventListener('mouseover', () => {
+                video.play(); // Play video on hover
+            });
+            video.addEventListener('mouseout', () => {
+                video.pause(); // Pause video when not hovered
+                video.currentTime = 0; // Reset to start
+            });
+        });
+    </script>
+</body>
+</html>

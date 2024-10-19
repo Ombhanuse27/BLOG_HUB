@@ -160,30 +160,33 @@ function HomePage() {
       {selectedContent && <div className="p-4 bg-gray-100 text-lg">{selectedContent}</div>}
 
       <div className="p-6 bg-gray-100">
-        {posts.length ? (
-          posts.map((post) => (
-            <div key={post.id} className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start">
-              <div className="flex items-start">
-                <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
-                <div>
-                  <p className="font-bold">{post.user || "Unknown User"}</p>
-                  <h3 className="text-xl font-bold">{post.title}</h3>
-                  <p className="text-gray-500">{formatDate(post.timestamp)}</p> {/* Display formatted date */}
-                </div>
-              </div>
-              <div>
-                <img 
-                  src={post.bannerUrl} 
-                  alt={post.title} 
-                  className="w-64 h-32 object-cover rounded" // Adjust the size for post banner
-                />
-              </div>
+  {posts.length ? (
+    posts.map((post) => (
+      <Link to={`/post/${post.id}`} key={post.id}> {/* Navigates to post details */}
+        <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
+          <div className="flex items-start">
+            <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
+            <div>
+              <p className="font-bold">{post.user || "Unknown User"}</p>
+              <h3 className="text-xl font-bold">{post.title}</h3>
+              <p className="text-gray-500">{formatDate(post.timestamp)}</p> {/* Formatted timestamp */}
             </div>
-          ))
-        ) : (
-          <p className="text-gray-600">No posts available for the selected category</p>
-        )}
-      </div>
+          </div>
+          <div>
+            <img 
+              src={post.bannerUrl} 
+              alt={post.title} 
+              className="w-64 h-32 object-cover rounded" // Post banner size
+            />
+          </div>
+        </div>
+      </Link>
+    ))
+  ) : (
+    <p className="text-gray-600">No posts available for the selected category</p>
+  )}
+</div>
+
     </div>
   );
 }

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Landing Page</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            background-color: antiquewhite;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: antiquewhite;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .navbar ul li {
+            display: inline;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        /* Landing Section */
+        .landing {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px;
+        }
+
+        .left-content {
+            width: 50%;
+        }
+
+        .left-content h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .left-content p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .left-content h2 {
+            font-size: 1.8em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .left-content .extra-text {
+            font-size: 1em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .left-content button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .left-content button:hover {
+            background-color: #45a049;
+        }
+
+        /* Gallery of videos */
+        .gallery {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chef-video {
+            width: 30%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            object-fit: cover; /* Ensure video fits well */
+        }
+
+        .divider {
+            width: 4px; /* Thickness of the divider */
+            height: 800px; /* Height of the divider */
+            background: linear-gradient(to bottom, #4CAF50, #8BC34A); /* Gradient color */
+            margin: 0 20px; /* Margin for spacing */
+        }
+
+        .image-container {
+            border-radius: 5%;
+            width: 50%;
+            position: relative;
+            overflow: hidden; /* Hide overflow for transitions */
+            height: 800px; /* Set height for the image container */
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute; /* Position absolute for stacking */
+            opacity: 0;
+            transition: opacity 1s ease-in-out; /* Smooth transition */
+        }
+
+        .image-container img.active {
+            opacity: 1; /* Show active image */
+        }
+
+        /* Footer or additional info (optional) */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f8f8;
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar Section -->
+    <div class="navbar">
+        <div class="logo">
+            <h2>My Blog</h2>
+        </div>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Categories</a></li>
+            <li><a href="#">Write</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </div>
+
+    <!-- Landing Section -->
+    <div class="landing">
+        <div class="image-container" id="imageSlider">
+            <img src="jai.s.webp" alt="Image 1" class="active">
+            <img src="g2.jpg" alt="Image 2">
+            <img src="g3.jpg" alt="Image 3">
+            <img src="g4.jpg" alt="Image 4">
+            <img src="g5.jpg" alt="Image 5">
+            <img src="g6.jpg" alt="Image 6">
+            <!-- <img src="g7.jpg" alt="Image 7"> -->
+            <!-- <img src="g8.jpg" alt="Image 8">
+            <img src="g9.jpg" alt="Image 9">
+            <img src="g10.jpg" alt="Image 10"> -->
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="left-content">
+            <h1>A Journey Through Culinary Delights and Inspiring Stories</h1>
+            <p>Explore a vibrant world of flavors and creativity with passionate bloggers sharing their favorite recipes and unique perspectives. Whether you're a seasoned cook or a beginner, our curated categories have something for everyone. Join us in celebrating the joy of cooking and the art of storytelling!</p>
+            <!-- Gallery of videos -->
+            <div class="gallery">
+                <video src="central bucharest.mp4" muted loop class="chef-video"></video>
+                <video src="news.mp4" muted loop class="chef-video"></video>
+                <video src="whether.mp4" muted loop class="chef-video"></video>
+            </div>
+
+            <!-- Subtitle and extra text between videos and button -->
+            <h2>More Than Just Blogging</h2>
+            <p class="extra-text">Join our community of writers and share your unique voice with the world. We offer insightful tips, exciting categories, and more to help you on your blogging journey.</p>
+
+            <button>Explore More</button>
+        </div>
+    </div>
+
+    <!-- Footer (Optional) -->
+    <div class="footer">
+        <p>© 2024 My Blog. All rights reserved.</p>
+    </div>
+
+    <script>
+        const images = document.querySelectorAll('.image-container img');
+        let currentIndex = 0;
+
+        function changeImage() {
+            images[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % images.length;
+            images[currentIndex].classList.add('active');
+        }
+
+        setInterval(changeImage, 5000); // Change image every 5 seconds
+
+        // Video playback control
+        const videos = document.querySelectorAll('.chef-video');
+
+        videos.forEach(video => {
+            video.addEventListener('mouseover', () => {
+                video.play(); // Play video on hover
+            });
+            video.addEventListener('mouseout', () => {
+                video.pause(); // Pause video when not hovered
+                video.currentTime = 0; // Reset to start
+            });
+        });
+    </script>
+</body>
+</html>

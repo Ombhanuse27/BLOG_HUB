@@ -11,18 +11,18 @@ import AddPost from './components/AddPost';
 import CategoryPage from './components/CategoryPage';
 import { BackgroundBeamsWithCollisionDemo } from './components/BackgroundBeamsWithCollisionDemo';
 import { BackgroundBeamsWithCollision } from './components/ui/background-beams-with-collision';
-import PostPage from './components/PostPage';
+import PostDetail from './components/PostDetail';
+import LandingPage from './LandingPage';
+
 
 const Home = () => (
-  <div className='h-16 px-5 bg-red-500 flex items-center justify-between'>
-    <h2 className="text-white font-bold">Logo</h2>
+  <div className='h-20 px-5 flex items-center justify-between'>
+    <h2 className="text-black font-bold">My Blog</h2>
     <div className='flex gap-8'>
-      <h4 className="text-white cursor-pointer">Our Story</h4>
-      <Link to="/addpost">
-        <h4 className="text-white cursor-pointer">Write</h4>
-      </Link>
+      <h4 className="text-black cursor-pointer">Our Story</h4>
+      
       <Link to="/signin">
-        <h4 className='cursor-pointer text-white'>Sign In</h4>
+        <h4 className='cursor-pointer text-black'>Sign In</h4>
       </Link>
     </div>
   </div>
@@ -46,13 +46,14 @@ const App = () => {
     <Router>
      
       <Routes>
-        <Route path="/" element={<div><Home/><BackgroundBeamsWithCollisionDemo/></div>} />
+        <Route path="/" element={<div><Home/><LandingPage/></div>} />
 
        
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/addpost" element={<AddPost />} />
-        <Route path="/post/:id" element={<PostPage />}/>
+        <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/categorypage" element={<CategoryPage />} />
+
         
         <Route path="/signin" element={
          
