@@ -108,7 +108,7 @@ function HomePage() {
 
   return (
     <div>
-      <div className='h-16 px-5 bg-red-500 flex items-center justify-between'>
+      <div className='h-16 px-5 bg-slate-400 flex items-center justify-between'>
         <h2 className="text-white font-bold">Logo</h2>
         <div className="flex-grow mx-4">
           <input
@@ -146,7 +146,7 @@ function HomePage() {
               key={topic}
               onClick={() => setSelectedCategory(topic)} 
               className={`p-2 rounded cursor-pointer ${
-                selectedCategory === topic ? 'bg-blue-700 text-white' : 'bg-blue-500 text-white'
+                selectedCategory === topic ? 'bg-white-700 text-black' : 'bg-white-500 text-black'
               }`}
             >
               {topic}

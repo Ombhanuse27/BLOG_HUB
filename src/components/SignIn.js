@@ -2,25 +2,38 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { auth } from "./firebase";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for programmatic navigation
+import { useNavigate } from "react-router-dom";
+import { getFirestore, doc, getDoc } from "firebase/firestore"; // Import Firestore functions
 import "react-toastify/dist/ReactToastify.css";
-
 import SignInwithGoogle from "./signInWIthGoogle";
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate();
+  const db = getFirestore(); // Initialize Firestore
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      console.log("User logged in Successfully");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Check if the user has followed topics in Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists() && userDocSnap.data().followedTopics?.length > 0) {
+        // Redirect to homepage if user has followed topics
+        navigate("/HomePage");
+      } else {
+        // Redirect to category page if no followed topics found
+        navigate("/CategoryPage");
+      }
+
       toast.success("User logged in Successfully", {
         position: "top-center",
       });
-      navigate("/CategoryPage"); // Use navigate for client-side routing
     } catch (error) {
       console.log(error.message);
       toast.error(error.message, {

@@ -9,8 +9,8 @@ import { auth } from './components/firebase';
 import HomePage from './components/HomePage';
 import AddPost from './components/AddPost';
 import CategoryPage from './components/CategoryPage';
-import { BackgroundBeamsWithCollisionDemo } from './components/BackgroundBeamsWithCollisionDemo';
-import { BackgroundBeamsWithCollision } from './components/ui/background-beams-with-collision';
+// import { BackgroundBeamsWithCollisionDemo } from './components/BackgroundBeamsWithCollisionDemo';
+// import { BackgroundBeamsWithCollision } from './components/  ui/background-beams-with-collision';
 import PostDetail from './components/PostDetail';
 import LandingPage from './LandingPage';
 
