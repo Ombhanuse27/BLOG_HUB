@@ -5,10 +5,13 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const topics = [
   { name: "Data Science", followed: false },
-  { name: "Self Improvement", followed: false },
+  { name: "Python", followed: false },
+  { name: "Artificial Intelligence", followed: false },
+  { name: "Software Developement", followed: false },
+  { name: "Javascript", followed: false },
+  { name: "Recipe", followed: false },
+  { name: "Machine Learning", followed: false },
   { name: "Technology", followed: false },
-  { name: "Writing", followed: false },
-  { name: "Relationships", followed: false },
 ];
 
 function CategoryPage() {

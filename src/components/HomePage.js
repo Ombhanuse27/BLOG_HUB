@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import userIcon from '../img/user.png';
 import edit from '../img/edit.png';
+import logo from '../img/letsblog.png';
+import search from '../img/search.png';
 import logout from '../img/log-out.png';
 import { auth, rtdb, db } from './firebase';
 import { getDoc, doc } from "firebase/firestore";
@@ -109,17 +111,18 @@ function HomePage() {
   return (
     <div>
       <div className='h-16 px-5 bg-slate-400 flex items-center justify-between'>
-        <h2 className="text-white font-bold">Logo</h2>
-        <div className="flex-grow mx-4">
+        <img src={logo} alt="Logo" className="w-27 h-8" />
+        <div className="w-50 h-10 p-2 -ml-5 bg-white border rounded-2xl flex">
+          <img src={search} alt="Search" className="w-5 h-5" />  
           <input
-            type="text"
+            type="text"  
             placeholder="Search..."
-            className="w-70 p-2 border rounded focus:outline-none"
+            className="w-40 h-7 ml-2 bg-transparent outline-none"
           />
         </div>
         <div className='flex gap-20'>
           <Link to="/addpost">
-            <h4 className="text-white cursor-pointer">Write</h4>
+            <h4 className="text-black cursor-pointer">Write</h4>
           </Link>
           <div className="App">
             <div className='menu-container' ref={menuRef}>
@@ -145,8 +148,8 @@ function HomePage() {
             <span
               key={topic}
               onClick={() => setSelectedCategory(topic)} 
-              className={`p-2 rounded cursor-pointer ${
-                selectedCategory === topic ? 'bg-white-700 text-black' : 'bg-white-500 text-black'
+              className={`p-2 cursor-pointer ${
+                selectedCategory === topic ? 'bg-white-700 text-black border-b-2  border-slate-900' : 'bg-white-500 text-black'
               }`}
             >
               {topic}
