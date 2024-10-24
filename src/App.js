@@ -42,6 +42,7 @@ const App = () => {
 
   return (
     <Router>
+      
       <Routes>
         <Route
           path="/"
@@ -53,14 +54,12 @@ const App = () => {
           }
         />
 
-        <Route path="/homepage" element={ <div>
-              <Navbar />
-              
-            </div>} />
+<Route path="/homepage" element={<Navbar />} />
         <Route path="/addpost" element={<AddPost />} />
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/categorypage" element={<CategoryPage />} />
-        <Route path="/navbar" element={<Navbar />} />
+        {/* <Route path="/navbar" element={<Navbar />} /> */}
+        <Route path="/profile" element={<Profile />} />
 
         <Route
           path="/signin"
@@ -83,7 +82,7 @@ const App = () => {
             </div>
           }
         />
-        <Route path="/profile" element={<Profile />} />
+       
       </Routes>
       <ToastContainer />
     </Router>
