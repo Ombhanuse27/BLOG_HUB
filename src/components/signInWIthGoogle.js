@@ -10,7 +10,7 @@ function SignInwithGoogle() {
       console.log(result);
       const user = result.user;
       if (result.user) {
-        await setDoc(doc(db, "Users", user.uid), {
+        await setDoc(doc(db, "users", user.uid), {
           email: user.email,
           firstName: user.displayName,
           photo: user.photoURL,
@@ -26,7 +26,7 @@ function SignInwithGoogle() {
 
   return (
     <div>
-      <p className="continue-p">--Or continue with--</p>
+      <p className="continue-p ml-20">--Or continue with--</p>
       <div
         style={{ display: "flex", justifyContent: "center", cursor: "pointer" }}
         onClick={googleLogin}

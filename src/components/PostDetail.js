@@ -36,7 +36,7 @@ function PostDetail() {
   };
 
   return (
-    <div className="p-6 bg-gray-100">
+    <div className="p-4 bg-gray-100 mr-60 ml-60">
       <div className="bg-white p-4 shadow-md rounded">
         <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
         

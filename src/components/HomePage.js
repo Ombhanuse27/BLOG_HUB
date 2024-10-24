@@ -15,7 +15,7 @@ function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState(""); 
   const [posts, setPosts] = useState([]); 
   const [selectedContent, setSelectedContent] = useState(""); 
-  let menuRef = useRef();
+  let menuRef = useRef(null);
 
   useEffect(() => {
     const fetchFollowedTopics = async () => {
@@ -79,7 +79,7 @@ function HomePage() {
 
   useEffect(() => {
     const handler = (e) => {
-      if (!menuRef.current.contains(e.target)) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpen(false);
       }
     };
@@ -98,7 +98,6 @@ function HomePage() {
     }
   }
 
-  // Function to format the timestamp
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString("en-US", {
@@ -109,8 +108,9 @@ function HomePage() {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <div className='h-16 px-5 bg-slate-400 flex items-center justify-between'>
+        <div className='flex gap-10 '>
         <img src={logo} alt="Logo" className="w-27 h-8" />
         <div className="w-50 h-10 p-2 -ml-5 bg-white border rounded-2xl flex">
           <img src={search} alt="Search" className="w-5 h-5" />  
@@ -119,26 +119,31 @@ function HomePage() {
             placeholder="Search..."
             className="w-40 h-7 ml-2 bg-transparent outline-none"
           />
+          </div>
         </div>
         <div className='flex gap-20'>
           <Link to="/addpost">
             <h4 className="text-black cursor-pointer">Write</h4>
           </Link>
-          <div className="App">
+
+          {/* Conditional Dropdown Rendering */}
+          {/* <div className="App">
             <div className='menu-container' ref={menuRef}>
-              <div className='menu-trigger' onClick={() => { setOpen(!open) }}>
+              <div className='menu-trigger' onClick={() => setOpen(!open)}>
                 <img src={userIcon} alt="User Profile" className="w-7 h-8 rounded-full" />
               </div>
-              <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`}>
-                <h3>Bunny<br /><span>Website Developer</span></h3>
-                <ul>
-                  <DropdownItem img={userIcon} text={"My Profile"} />
-                  <DropdownItem img={edit} text={"Edit Profile"} />
-                  <DropdownItem img={logout} text={"Logout"} isLogout handleLogout={handleLogout} />
-                </ul>
-              </div>
+              {open && (
+                <div className={`dropdown-menu ${open ? 'active' : 'inactive'}`}>
+                  <h3>Bunny<br /><span>Website Developer</span></h3>
+                  <ul>
+                    <DropdownItem img={userIcon} text={"My Profile"} />
+                    <DropdownItem img={edit} text={"Edit Profile"} />
+                    <DropdownItem img={logout} text={"Logout"} isLogout handleLogout={handleLogout} />
+                  </ul>
+                </div>
+              )}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -149,7 +154,7 @@ function HomePage() {
               key={topic}
               onClick={() => setSelectedCategory(topic)} 
               className={`p-2 cursor-pointer ${
-                selectedCategory === topic ? 'bg-white-700 text-black border-b-2  border-slate-900' : 'bg-white-500 text-black'
+                selectedCategory === topic ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
               }`}
             >
               {topic}
@@ -163,45 +168,44 @@ function HomePage() {
       {selectedContent && <div className="p-4 bg-gray-100 text-lg">{selectedContent}</div>}
 
       <div className="p-6 bg-gray-100">
-  {posts.length ? (
-    posts.map((post) => (
-      <Link to={`/post/${post.id}`} key={post.id}> {/* Navigates to post details */}
-        <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
-          <div className="flex items-start">
-            <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
-            <div>
-              <p className="font-bold">{post.user || "Unknown User"}</p>
-              <h3 className="text-xl font-bold">{post.title}</h3>
-              <p className="text-gray-500">{formatDate(post.timestamp)}</p> {/* Formatted timestamp */}
-            </div>
-          </div>
-          <div>
-            <img 
-              src={post.bannerUrl} 
-              alt={post.title} 
-              className="w-64 h-32 object-cover rounded" // Post banner size
-            />
-          </div>
-        </div>
-      </Link>
-    ))
-  ) : (
-    <p className="text-gray-600">No posts available for the selected category</p>
-  )}
-</div>
-
+        {posts.length ? (
+          posts.map((post) => (
+            <Link to={`/post/${post.id}`} key={post.id}> {/* Navigates to post details */}
+              <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
+                <div className="flex items-start">
+                  <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
+                  <div>
+                    <p className="font-bold">{post.user || "Unknown User"}</p>
+                    <h3 className="text-xl font-bold mt-4">{post.title}</h3>
+                    <p className="text-gray-500 mt-5">{formatDate(post.timestamp)}</p>
+                  </div>
+                </div>
+                <div>
+                  <img 
+                    src={post.bannerUrl} 
+                    alt={post.title} 
+                    className="w-64 h-32 object-cover rounded"
+                  />
+                </div>
+              </div>
+            </Link>
+          ))
+        ) : (
+          <p className="text-gray-600">No posts available for the selected category</p>
+        )}
+      </div>
     </div>
   );
 }
 
-function DropdownItem(props) {
+function DropdownItem({ img, text, isLogout, handleLogout }) {
   return (
     <li className='dropdownItem'>
-      <img src={props.img} alt={props.text} />
-      {props.isLogout ? (
-        <button onClick={props.handleLogout}>{props.text}</button>
+      <img src={img} alt={text} />
+      {isLogout ? (
+        <button onClick={handleLogout}>{text}</button>
       ) : (
-        <button>{props.text}</button>
+        <button>{text}</button>
       )}
     </li>
   );
