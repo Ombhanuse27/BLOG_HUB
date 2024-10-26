@@ -13,6 +13,7 @@ import { cn } from "../lib/utils";
 import HomePage from "./HomePage";
 import { Routes, Route } from "react-router-dom";
 import Profile from "./profile";
+import SignIn from "./SignIn";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -42,7 +43,7 @@ export function Navbar() {
     },
     {
       label: "Logout",
-      href: "#",
+      href: "/signin", // Corrected Logout path
       icon: (
         <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
