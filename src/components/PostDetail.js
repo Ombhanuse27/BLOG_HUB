@@ -7,6 +7,7 @@ import userIcon from '../img/user.png';
 import { auth } from './firebase';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment, faShare, faBookmark } from '@fortawesome/free-solid-svg-icons';
+import { faLinkedin, faTwitter, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 function PostDetail() {
   const { postId } = useParams();
@@ -15,6 +16,7 @@ function PostDetail() {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [showShareOptions, setShowShareOptions] = useState(false);
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -60,6 +62,12 @@ function PostDetail() {
       setNewComment("");
     }
   };
+
+  
+
+const handleShareClick = () => {
+  setShowShareOptions(!showShareOptions);
+};
   
   useEffect(() => {
     const checkIfFollowing = async () => {
@@ -167,7 +175,7 @@ function PostDetail() {
               <FontAwesomeIcon icon={faComment} />
               <span>Comment</span>
             </button>
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-green-500">
+            <button onClick={handleShareClick} className="flex items-center space-x-2 text-gray-600 hover:text-green-500">
               <FontAwesomeIcon icon={faShare} />
               <span>Share</span>
             </button>
@@ -209,6 +217,57 @@ function PostDetail() {
           </div>
         </div>
       )}
+{showShareOptions && (
+  <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50">
+    <div className="bg-white p-4 rounded shadow-lg space-y-4 relative">
+      <h3 className="text-lg font-bold">Share on:</h3>
+      <button onClick={() => setShowShareOptions(false)} className="absolute top-2 right-2 text-gray-600 text-xl">✕</button>
+      
+      <div className="flex flex-col space-y-2">
+        <a 
+          href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(post.title)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center space-x-2"
+        >
+          <FontAwesomeIcon icon={faLinkedin} />
+          <span>LinkedIn</span>
+        </a>
+        
+        <a 
+          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center space-x-2"
+        >
+          <FontAwesomeIcon icon={faTwitter} />
+          <span>Twitter</span>
+        </a>
+        
+        <a 
+          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center space-x-2"
+        >
+          <FontAwesomeIcon icon={faFacebook} />
+          <span>Facebook</span>
+        </a>
+        
+        <a 
+          href={`https://wa.me/?text=${encodeURIComponent(post.title + " " + window.location.href)}`}
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center space-x-2"
+        >
+          <FontAwesomeIcon icon={faWhatsapp} />
+          <span>WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

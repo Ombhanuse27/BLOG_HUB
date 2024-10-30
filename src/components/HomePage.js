@@ -49,11 +49,21 @@ function HomePage() {
       const postsRef = ref(rtdb, 'posts');
       onValue(postsRef, (snapshot) => {
         const allPosts = snapshot.val();
-        const categoryPosts = [];
-
+        let categoryPosts = [];
+  
         if (allPosts) {
           for (let key in allPosts) {
-            if (allPosts[key].category && allPosts[key].category.categoryTitle === selectedCategory) {
+            const postCategory = allPosts[key].category?.categoryTitle;
+  
+            // Check if the category is "For You"
+            if (selectedCategory === "For You") {
+              if (followedTopics.includes(postCategory)) {
+                categoryPosts.push({
+                  id: key,
+                  ...allPosts[key],
+                });
+              }
+            } else if (postCategory === selectedCategory) {
               categoryPosts.push({
                 id: key,
                 ...allPosts[key],
@@ -61,21 +71,27 @@ function HomePage() {
             }
           }
         }
-
+  
         setPosts(categoryPosts);
-        setSelectedContent(`Displaying content for category: ${selectedCategory}`);
+        setSelectedContent(
+          selectedCategory === "For You"
+            ? "Displaying posts for your followed topics"
+            : `Displaying content for category: ${selectedCategory}`
+        );
       }, (error) => {
         console.error("Error fetching posts:", error);
       });
     };
-
+  
+    // Fetch posts if a category is selected or "For You" is selected
     if (selectedCategory) {
       fetchPosts();
     } else {
       setPosts([]);
       setSelectedContent("");
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, followedTopics]); // Add followedTopics as dependency
+  
 
   useEffect(() => {
     const handler = (e) => {
@@ -148,6 +164,16 @@ function HomePage() {
       </div>
 
       <nav className="flex space-x-4 bg-gray-200 p-4">
+      
+  {/* "For You" category */}
+  <span
+    onClick={() => setSelectedCategory("For You")} 
+    className={`p-2 cursor-pointer ${
+      selectedCategory === "For You" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
+    }`}
+  >
+    For You
+  </span>
         {followedTopics.length ? (
           followedTopics.map((topic) => (
             <span
@@ -167,7 +193,7 @@ function HomePage() {
 
       {selectedContent && <div className="p-4 bg-gray-100 text-lg">{selectedContent}</div>}
 
-      <div className="p-6 bg-gray-100">
+      <div className="p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
         {posts.length ? (
           posts.map((post) => (
             <Link to={`/post/${post.id}`} key={post.id}> {/* Navigates to post details */}
