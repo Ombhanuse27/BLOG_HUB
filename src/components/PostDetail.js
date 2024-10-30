@@ -255,7 +255,7 @@ const handleShareClick = () => {
         </a>
         
         <a 
-          href={`https://wa.me/?text=${encodeURIComponent(post.title + " " + window.location.href)}`}
+          href={`https://wa.me/?text=${encodeURIComponent( " " + window.location.href)}`}
           target="_blank" 
           rel="noopener noreferrer"
           className="flex items-center space-x-2"
