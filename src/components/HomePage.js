@@ -12,7 +12,7 @@ import { ref, onValue } from "firebase/database";
 function HomePage() {
   const [open, setOpen] = useState(false);
   const [followedTopics, setFollowedTopics] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(""); 
+  const [selectedCategory, setSelectedCategory] = useState("For You"); 
   const [posts, setPosts] = useState([]); 
   const [selectedContent, setSelectedContent] = useState(""); 
   let menuRef = useRef(null);

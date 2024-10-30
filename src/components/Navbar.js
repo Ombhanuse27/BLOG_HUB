@@ -14,6 +14,7 @@ import HomePage from "./HomePage";
 import { Routes, Route } from "react-router-dom";
 import Profile from "./profile";
 import SignIn from "./SignIn";
+import  loki from "../img/loki2.jpg";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -76,11 +77,11 @@ export function Navbar() {
           <div>
             <SidebarLink
               link={{
-                label: "Manu Arora",
+                label: "Bunny",
                 href: "#",
                 icon: (
                   <img
-                    src="https://assets.aceternity.com/manu.png"
+                    src={loki}
                     className="h-7 w-7 flex-shrink-0 rounded-full"
                     width={50}
                     height={50}

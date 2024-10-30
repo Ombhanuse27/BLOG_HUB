@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ref, get, update, child, push } from "firebase/database";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc,setDoc } from "firebase/firestore";
 import { rtdb, db } from './firebase';
 import userIcon from '../img/user.png';
 import { auth } from './firebase';
@@ -68,6 +68,27 @@ function PostDetail() {
 const handleShareClick = () => {
   setShowShareOptions(!showShareOptions);
 };
+
+
+const handleSavePost = async () => {
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const savedPostRef = doc(db, `users/${currentUser.uid}/savedPosts`, postId);
+    await setDoc(savedPostRef, {
+      title: post.title,
+      content: post.content,
+      timestamp: post.timestamp,
+      bannerUrl: post.bannerUrl,
+      category: post.category,
+      user: post.user,
+      userId: post.userId
+    });
+    alert("Post saved to your profile!");
+  } else {
+    console.log("User not logged in.");
+  }
+};
+
   
   useEffect(() => {
     const checkIfFollowing = async () => {
@@ -179,7 +200,7 @@ const handleShareClick = () => {
               <FontAwesomeIcon icon={faShare} />
               <span>Share</span>
             </button>
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-yellow-500">
+            <button onClick={handleSavePost} className="flex items-center space-x-2 text-gray-600 hover:text-yellow-500">
               <FontAwesomeIcon icon={faBookmark} />
               <span>Save</span>
             </button>
@@ -219,9 +240,9 @@ const handleShareClick = () => {
       )}
 {showShareOptions && (
   <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50">
-    <div className="bg-white p-4 rounded shadow-lg space-y-4 relative">
+    <div className="bg-white p-4 w-fit rounded shadow-lg space-y-4 relative">
       <h3 className="text-lg font-bold">Share on:</h3>
-      <button onClick={() => setShowShareOptions(false)} className="absolute top-2 right-2 text-gray-600 text-xl">✕</button>
+      <button onClick={() => setShowShareOptions(false)} className="absolute mt-2 top-1 right-2  text-gray-600 text-pretty">✕</button>
       
       <div className="flex flex-col space-y-2">
         <a 

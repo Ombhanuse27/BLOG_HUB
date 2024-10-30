@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
+import { collection, getDocs } from 'firebase/firestore';
 import { doc, getDoc } from "firebase/firestore";
+import { Link } from "react-router-dom";
+import userIcon from '../img/user.png';
+
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
@@ -36,6 +40,32 @@ function Profile() {
     }
   }
 
+  const [savedPosts, setSavedPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchSavedPosts = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const savedPostsRef = collection(db, `users/${currentUser.uid}/savedPosts`);
+        const snapshot = await getDocs(savedPostsRef);
+        const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSavedPosts(posts);
+      }
+    };
+    fetchSavedPosts();
+  }, []);
+
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
+
+  
+
   return (
     <div className="text-center">
       {userDetails ? (
@@ -63,7 +93,41 @@ function Profile() {
       ) : (
         <p>Loading...</p>
       )}
+    
+    <div className="w-full">
+      <h1 className="text-2xl font-bold mb-4">Saved Posts</h1>
+      <div className="p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
+      {savedPosts.length > 0 ? (
+        savedPosts.map(post => (
+          <Link to={`/post/${post.id}`} key={post.id}> {/* Navigates to post details */}
+              <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
+                <div className="flex items-start">
+                  <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full " />
+                  <div>
+                    <p className="p-2 mr-20 font-bold">{post.user || "Unknown User"}</p>
+                    <h3 className="text-xl font-bold mt-4 ">{post.title}</h3>
+                    <p className="text-gray-500 mt-5 mr-20">{formatDate(post.timestamp)}</p>
+                  </div>
+                </div>
+                <div>
+                  <img 
+                    src={post.bannerUrl} 
+                    alt={post.title} 
+                    className="w-64 h-32 object-cover rounded"
+                  />
+                </div>
+              </div>
+            </Link>
+        ))
+      ) : (
+        <p>No saved posts.</p>
+      )}
+      </div>
     </div>
+  
+
+    </div>
+    
   );
 }
 
