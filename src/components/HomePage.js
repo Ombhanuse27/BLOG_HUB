@@ -45,29 +45,36 @@ function HomePage() {
   }, []); 
 
   useEffect(() => {
-    const fetchPosts = () => {
+    const fetchPosts = async () => {
       const postsRef = ref(rtdb, 'posts');
-      onValue(postsRef, (snapshot) => {
+      onValue(postsRef, async (snapshot) => {
         const allPosts = snapshot.val();
         let categoryPosts = [];
   
         if (allPosts) {
           for (let key in allPosts) {
             const postCategory = allPosts[key].category?.categoryTitle;
+            const userId = allPosts[key].userId; // Get userId from the post
   
-            // Check if the category is "For You"
-            if (selectedCategory === "For You") {
-              if (followedTopics.includes(postCategory)) {
+            // Fetch user document
+            const userDocRef = doc(db, `users/${userId}`);
+            const userDoc = await getDoc(userDocRef); // Fetch user document
+  
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              console.log('Fetched user data for userId:', userId, userData); // Log user data
+              const userIconUrl = userData.photo || userIcon; // Use user's photo or default
+  
+              // Check if category matches
+              if ((selectedCategory === "For You" && followedTopics.includes(postCategory)) || postCategory === selectedCategory) {
                 categoryPosts.push({
                   id: key,
+                  userIcon: userIconUrl, // Add user icon URL to the post data
                   ...allPosts[key],
                 });
               }
-            } else if (postCategory === selectedCategory) {
-              categoryPosts.push({
-                id: key,
-                ...allPosts[key],
-              });
+            } else {
+              console.warn(`User document not found for userId: ${userId}`); // Log if user document doesn't exist
             }
           }
         }
@@ -83,7 +90,6 @@ function HomePage() {
       });
     };
   
-    // Fetch posts if a category is selected or "For You" is selected
     if (selectedCategory) {
       fetchPosts();
     } else {
@@ -91,6 +97,7 @@ function HomePage() {
       setSelectedContent("");
     }
   }, [selectedCategory, followedTopics]); // Add followedTopics as dependency
+   // Add followedTopics as dependency
   
 
   useEffect(() => {
@@ -199,7 +206,7 @@ function HomePage() {
             <Link to={`/post/${post.id}`} key={post.id}> {/* Navigates to post details */}
               <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
                 <div className="flex items-start">
-                  <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
+                  <img src={post.userIconUrl || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
                   <div>
                     <p className="font-bold">{post.user || "Unknown User"}</p>
                     <h3 className="text-xl font-bold mt-4">{post.title}</h3>

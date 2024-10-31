@@ -23,6 +23,13 @@ function PostDetail() {
       const snapshot = await get(ref(rtdb, `posts/${postId}`));
       if (snapshot.exists()) {
         const postData = snapshot.val();
+        const postUserRef = doc(db, `users/${postData.userId}`);
+        const postUserDoc = await getDoc(postUserRef);
+        if (postUserDoc.exists()) {
+          const postUserData = postUserDoc.data();
+          // Retrieve the user's photoURL from Firestore
+          postData.userIcon = postUserData.photo || userIcon; // use the uploaded photo or default
+        }
         setPost(postData);
         // Fetch existing comments
         setComments(Array.isArray(postData.comments) ? postData.comments : Object.values(postData.comments || {}));
@@ -32,6 +39,7 @@ function PostDetail() {
     };
     fetchPostData();
   }, [postId]);
+  
 
   const handlePostComment = async () => {
     const currentUser = auth.currentUser;
