@@ -54,27 +54,25 @@ function HomePage() {
         if (allPosts) {
           for (let key in allPosts) {
             const postCategory = allPosts[key].category?.categoryTitle;
-            const userId = allPosts[key].userId; // Get userId from the post
+            const userId = allPosts[key].userId;
   
             // Fetch user document
             const userDocRef = doc(db, `users/${userId}`);
-            const userDoc = await getDoc(userDocRef); // Fetch user document
+            const userDoc = await getDoc(userDocRef);
   
             if (userDoc.exists()) {
               const userData = userDoc.data();
-              console.log('Fetched user data for userId:', userId, userData); // Log user data
-              const userIconUrl = userData.photo || userIcon; // Use user's photo or default
+              const userIconUrl = userData.photo || userIcon;
   
-              // Check if category matches
               if ((selectedCategory === "For You" && followedTopics.includes(postCategory)) || postCategory === selectedCategory) {
                 categoryPosts.push({
                   id: key,
-                  userIcon: userIconUrl, // Add user icon URL to the post data
+                  userIconUrl,
                   ...allPosts[key],
                 });
               }
             } else {
-              console.warn(`User document not found for userId: ${userId}`); // Log if user document doesn't exist
+              console.warn(`User document not found for userId: ${userId}`);
             }
           }
         }
@@ -96,7 +94,8 @@ function HomePage() {
       setPosts([]);
       setSelectedContent("");
     }
-  }, [selectedCategory, followedTopics]); // Add followedTopics as dependency
+  }, [selectedCategory, followedTopics]);
+   // Add followedTopics as dependency
    // Add followedTopics as dependency
   
 
