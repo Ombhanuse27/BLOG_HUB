@@ -4,6 +4,7 @@ import { collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { Link } from "react-router-dom";
 import userIcon from '../img/user.png';
 import { storage } from "./firebase";
+
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid'; 
 
@@ -37,6 +38,8 @@ function Profile() {
     });
   };
 
+
+
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -56,10 +59,36 @@ function Profile() {
     if (currentUser) {
       const savedPostsRef = collection(db, `users/${currentUser.uid}/savedPosts`);
       const snapshot = await getDocs(savedPostsRef);
-      const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      const posts = await Promise.all(
+        snapshot.docs.map(async (docSnap) => {
+          const postData = docSnap.data();
+          
+          // Default icon
+          let userIconUrl = userIcon;
+          
+          // Fetch the user’s profile photo from Firestore
+          if (postData.userId) {
+            try {
+              const userDocRef = doc(db, "users", postData.userId);
+              const userDocSnap = await getDoc(userDocRef);
+              if (userDocSnap.exists()) {
+                userIconUrl = userDocSnap.data().photo || userIcon;
+              }
+            } catch (error) {
+              console.error("Error fetching user icon:", error);
+            }
+          }
+          
+          return { id: docSnap.id, ...postData, userIcon: userIconUrl };
+        })
+      );
+      
       setSavedPosts(posts);
     }
   };
+  
+
 
   useEffect(() => {
     fetchSavedPosts();

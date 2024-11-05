@@ -25,40 +25,58 @@ function PostDetail() {
         const postData = snapshot.val();
         const postUserRef = doc(db, `users/${postData.userId}`);
         const postUserDoc = await getDoc(postUserRef);
+        
+        // Set post author's icon
         if (postUserDoc.exists()) {
           const postUserData = postUserDoc.data();
-          // Retrieve the user's photoURL from Firestore
-          postData.userIcon = postUserData.photo || userIcon; // use the uploaded photo or default
+          postData.userIcon = postUserData.photo || userIcon;
         }
+        
+        // Fetch existing comments and their user photos
+        const commentsWithPhotos = await Promise.all(
+          Object.values(postData.comments || {}).map(async (comment) => {
+            const commentUserRef = doc(db, `users/${comment.userId}`);
+            const commentUserDoc = await getDoc(commentUserRef);
+            
+            return {
+              ...comment,
+              userIcon: commentUserDoc.exists() ? commentUserDoc.data().photo || userIcon : userIcon,
+            };
+          })
+        );
+        
         setPost(postData);
-        // Fetch existing comments
-        setComments(Array.isArray(postData.comments) ? postData.comments : Object.values(postData.comments || {}));
+        setComments(commentsWithPhotos);
       } else {
         console.error("Post not found");
       }
     };
+  
     fetchPostData();
   }, [postId]);
   
-
   const handlePostComment = async () => {
     const currentUser = auth.currentUser;
     if (currentUser && newComment.trim()) {
       const currentUserRef = doc(db, `users/${currentUser.uid}`);
       const currentUserDoc = await getDoc(currentUserRef);
       
+      // Fetch user's display name and photo URL
       let userName = currentUser.displayName || "Unknown User";
+      let userPhotoURL = userIcon;
+      
       if (currentUserDoc.exists()) {
         const currentUserData = currentUserDoc.data();
         userName = `${currentUserData.firstName || ''} ${currentUserData.lastName || ''}`.trim() || userName;
+        userPhotoURL = currentUserData.photo || userIcon;
       }
       
       const newCommentObj = {
         userId: currentUser.uid,
         userName,
-        userIcon: currentUser.photoURL || userIcon,
+        userIcon: userPhotoURL,
         content: newComment,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
   
       const commentsRef = ref(rtdb, `posts/${postId}/comments`);
@@ -70,7 +88,8 @@ function PostDetail() {
       setNewComment("");
     }
   };
-
+  
+  
   
 
 const handleShareClick = () => {
