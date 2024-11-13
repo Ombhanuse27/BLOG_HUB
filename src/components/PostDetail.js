@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ref, get, update, child, push } from "firebase/database";
+import { ref, get,set, update, child, push,remove } from "firebase/database";
 import { doc, updateDoc, getDoc,setDoc } from "firebase/firestore";
 import { rtdb, db } from './firebase';
 import userIcon from '../img/user.png';
@@ -17,36 +17,44 @@ function PostDetail() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [showShareOptions, setShowShareOptions] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const fetchPostData = async () => {
       const snapshot = await get(ref(rtdb, `posts/${postId}`));
       if (snapshot.exists()) {
         const postData = snapshot.val();
+  
+        // Convert likes to an array if it's an object, otherwise default to an empty array
+        // postData.likes = postData.likes ? Object.keys(postData.likes) : [];
+  
         const postUserRef = doc(db, `users/${postData.userId}`);
         const postUserDoc = await getDoc(postUserRef);
-        
-        // Set post author's icon
+  
         if (postUserDoc.exists()) {
           const postUserData = postUserDoc.data();
           postData.userIcon = postUserData.photo || userIcon;
         }
-        
-        // Fetch existing comments and their user photos
+  
         const commentsWithPhotos = await Promise.all(
           Object.values(postData.comments || {}).map(async (comment) => {
             const commentUserRef = doc(db, `users/${comment.userId}`);
             const commentUserDoc = await getDoc(commentUserRef);
-            
+  
             return {
               ...comment,
               userIcon: commentUserDoc.exists() ? commentUserDoc.data().photo || userIcon : userIcon,
             };
           })
         );
-        
+  
         setPost(postData);
         setComments(commentsWithPhotos);
+        const currentUser = auth.currentUser;
+        if (currentUser && postData.likes) {
+          setIsLiked(Object.keys(postData.likes).includes(currentUser.uid));
+        }
       } else {
         console.error("Post not found");
       }
@@ -54,6 +62,7 @@ function PostDetail() {
   
     fetchPostData();
   }, [postId]);
+  
   
   const handlePostComment = async () => {
     const currentUser = auth.currentUser;
@@ -96,6 +105,20 @@ const handleShareClick = () => {
   setShowShareOptions(!showShareOptions);
 };
 
+useEffect(() => {
+  const checkIfSaved = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const savedPostRef = doc(db, `users/${currentUser.uid}/savedPosts`, postId);
+      const savedDoc = await getDoc(savedPostRef);
+      setIsSaved(savedDoc.exists()); // Set isSaved to true if the post is already saved
+    }
+  };
+  if (post) {
+    checkIfSaved();
+  }
+}, [post, postId]);
+
 
 const handleSavePost = async () => {
   const currentUser = auth.currentUser;
@@ -110,6 +133,7 @@ const handleSavePost = async () => {
       user: post.user,
       userId: post.userId
     });
+    setIsSaved(true);
     alert("Post saved to your profile!");
   } else {
     console.log("User not logged in.");
@@ -160,6 +184,25 @@ const handleSavePost = async () => {
     }
   };
 
+  const handleLike = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const likesRef = ref(rtdb, `posts/${postId}/likes/${currentUser.uid}`);
+  
+      if (isLiked) {
+        // Unlike the post: Remove the user from likes
+        await remove(likesRef);  // Remove the user's like entry
+        setIsLiked(false);
+      } else {
+        // Like the post: Add the user's data to likes
+        const userName = currentUser.displayName || "Unknown User";
+        await set(likesRef, { userId: currentUser.uid, userName });
+        setIsLiked(true);
+      }
+    } else {
+      console.log("User not logged in.");
+    }
+  };
   if (!post) {
     return <div>Loading...</div>;
   }
@@ -212,9 +255,9 @@ const handleSavePost = async () => {
           />
           
           <div className="flex justify-between items-center mt-4 px-4 py-2 border-t">
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-red-500">
+            <button className="flex items-center space-x-2 text-gray-600 hover:text-red-500" onClick={handleLike} style={{ color: isLiked ? 'red' : 'black' }}>
               <FontAwesomeIcon icon={faHeart} />
-              <span>Like</span>
+              <span style={{ color: isLiked ? 'red' : 'black' }}>{isLiked ? "Liked" : "Like"}</span>
             </button>
             <button 
               onClick={() => setShowComments(true)}
@@ -227,9 +270,9 @@ const handleSavePost = async () => {
               <FontAwesomeIcon icon={faShare} />
               <span>Share</span>
             </button>
-            <button onClick={handleSavePost} className="flex items-center space-x-2 text-gray-600 hover:text-yellow-500">
+            <button onClick={handleSavePost} className="flex items-center space-x-2 text-gray-600 hover:text-yellow-500" style={{ color: isSaved ? 'green' : 'black' }}>
               <FontAwesomeIcon icon={faBookmark} />
-              <span>Save</span>
+              <span style={{ color: isSaved ? 'green' : 'black' }}>{isSaved ? "Saved" : "Save"}</span>
             </button>
           </div>
         </div>

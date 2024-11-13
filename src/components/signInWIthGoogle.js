@@ -1,27 +1,36 @@
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { toast } from "react-toastify";
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc, getDoc } from "firebase/firestore";
 
 function SignInwithGoogle() {
-  function googleLogin() {
+  async function googleLogin() {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider).then(async (result) => {
-      console.log(result);
-      const user = result.user;
-      if (result.user) {
-        await setDoc(doc(db, "users", user.uid), {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    if (user) {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      // Check if followedTopics already exist, otherwise initialize
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
           email: user.email,
           firstName: user.displayName,
           photo: user.photoURL,
           lastName: "",
+          followedTopics: [], // Initialize followedTopics as empty
         });
-        toast.success("User logged in Successfully", {
-          position: "top-center",
-        });
-        window.location.href = "/categorypage";
       }
-    });
+      
+      toast.success("User logged in Successfully", {
+        position: "top-center",
+      });
+      
+      // Redirect to CategoryPage for topic selection
+      window.location.href = "/categorypage";
+    }
   }
 
   return (
@@ -34,7 +43,7 @@ function SignInwithGoogle() {
         <img
           src={require("../google.png")}
           width={"60%"}
-          alt="Sign in with Google" // Added alt attribute
+          alt="Sign in with Google"
         />
       </div>
     </div>

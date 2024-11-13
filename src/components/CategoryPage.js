@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { db, auth } from './firebase'; 
-import { doc, getDoc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
 
 const topics = [
   { name: "Data Science", followed: false },
   { name: "Python", followed: false },
   { name: "Artificial Intelligence", followed: false },
-  { name: "Software Developement", followed: false },
+  { name: "Software Development", followed: false },
   { name: "Javascript", followed: false },
   { name: "Recipe", followed: false },
   { name: "Machine Learning", followed: false },
@@ -45,7 +45,7 @@ function CategoryPage() {
     };
 
     fetchFollowedTopics();
-  }, []);
+  }, [user]);
 
   const toggleFollow = async (index) => {
     const updatedCategories = categories.map((category, i) =>
@@ -60,16 +60,23 @@ function CategoryPage() {
         .map((category) => category.name);
 
       try {
-        await setDoc(doc(db, "users", userId), {
-          followedTopics,
-        }, { merge: true });
+        console.log("Followed Topics to Store:", followedTopics);
+
+        // Store the followed topics in Firestore under the user document
+        await setDoc(
+          doc(db, "users", userId),
+          { followedTopics },
+          { merge: true } // Merge the new followed topics with existing data
+        );
+
+        console.log("Followed topics updated successfully in Firestore");
       } catch (error) {
         console.error("Error updating followed topics:", error);
       }
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = () => {  
     navigate("/homepage"); 
   };
 

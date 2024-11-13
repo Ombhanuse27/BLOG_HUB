@@ -165,7 +165,7 @@ function Profile() {
       )}
 
       <nav className="flex space-x-4 mt-4 bg-gray-200 p-4">
-        <span
+      <span
           onClick={() => setSelectedSection("Saved Posts")}
           className={`p-2 cursor-pointer ${
             selectedSection === "Saved Posts" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
@@ -176,7 +176,7 @@ function Profile() {
         <span
           onClick={() => setSelectedSection("About")}
           className={`p-2 cursor-pointer ${
-            selectedSection === "Saved Posts" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
+            selectedSection === "About" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
           }`}
         >
           About
@@ -184,6 +184,8 @@ function Profile() {
       </nav>
 
       <div className="w-full">
+      {selectedSection === "Saved Posts" ? (
+          <div>
         <h1 className="text-2xl mt-5 flex ml-10 font-bold mb-4">Showing the Saved Posts</h1>
         <div className="p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
           {savedPosts.length > 0 ? (
@@ -212,6 +214,18 @@ function Profile() {
             <p>No saved posts.</p>
           )}
         </div>
+      </div>
+    ) : selectedSection === "About" ? (
+          <div className="p-6 bg-gray-100 text-left">
+            <h2 className="text-2xl font-bold mb-4">About</h2>
+            <p><strong>Name:</strong> {userDetails.name || "N/A"}</p>
+            <p><strong>Address:</strong> {userDetails.address || "N/A"}</p>
+            <p><strong>Phone:</strong> {userDetails.phone || "N/A"}</p>
+            <p><strong>Social Link:</strong> {userDetails.socialLink || "N/A"}</p>
+            <p><strong>Location:</strong> {userDetails.location || "N/A"}</p>
+            <p><strong>Date of Birth:</strong> {userDetails.dob || "N/A"}</p>
+          </div>
+        ) : null}
       </div>
 
       {showEditProfile && (
