@@ -4,6 +4,8 @@ import { collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { Link } from "react-router-dom";
 import userIcon from '../img/user.png';
 import { storage } from "./firebase";
+import like from '../img/like.png';
+import comment from '../img/comment.png';
 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid'; 
@@ -56,43 +58,74 @@ function Profile() {
 
   const fetchSavedPosts = async () => {
     const currentUser = auth.currentUser;
+  
     if (currentUser) {
-      const savedPostsRef = collection(db, `users/${currentUser.uid}/savedPosts`);
-      const snapshot = await getDocs(savedPostsRef);
-      
-      const posts = await Promise.all(
-        snapshot.docs.map(async (docSnap) => {
-          const postData = docSnap.data();
-          
-          // Default icon
-          let userIconUrl = userIcon;
-          
-          // Fetch the user’s profile photo from Firestore
-          if (postData.userId) {
-            try {
-              const userDocRef = doc(db, "users", postData.userId);
-              const userDocSnap = await getDoc(userDocRef);
-              if (userDocSnap.exists()) {
-                userIconUrl = userDocSnap.data().photo || userIcon;
+      try {
+        // Reference to the user's saved posts collection
+        const savedPostsRef = collection(db, `users/${currentUser.uid}/savedPosts`);
+        const snapshot = await getDocs(savedPostsRef);
+  
+        const posts = await Promise.all(
+          snapshot.docs.map(async (docSnap) => {
+            const postData = docSnap.data();
+  
+            // Default user icon
+            let userIconUrl = userIcon;
+  
+            // Fetch the user’s profile photo from Firestore
+            if (postData.userId) {
+              try {
+                const userDocRef = doc(db, "users", postData.userId);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                  userIconUrl = userDocSnap.data().photo || userIcon;
+                }
+              } catch (error) {
+                console.error(`Error fetching user profile for userId: ${postData.userId}`, error);
               }
-            } catch (error) {
-              console.error("Error fetching user icon:", error);
             }
-          }
-          
-          return { id: docSnap.id, ...postData, userIcon: userIconUrl };
-        })
-      );
-      
-      setSavedPosts(posts);
+  
+            // Fetch the count of likes
+            let likeCount = 0;
+            try {
+              const likesRef = collection(db, `posts/${docSnap.id}/likes`);
+              const likesSnap = await getDocs(likesRef);
+              likeCount = likesSnap.size;
+            } catch (error) {
+              console.error(`Error fetching likes for postId: ${docSnap.id}`, error);
+            }
+  
+            // Fetch the count of comments
+            let commentCount = 0;
+            try {
+              const commentsRef = collection(db, `posts/${docSnap.id}/comments`);
+              const commentsSnap = await getDocs(commentsRef);
+              commentCount = commentsSnap.size;
+            } catch (error) {
+              console.error(`Error fetching comments for postId: ${docSnap.id}`, error);
+            }
+  
+            return { 
+              id: docSnap.id, 
+              ...postData, 
+              userIcon: userIconUrl, 
+              likesCount: likeCount, 
+              commentsCount: commentCount 
+            };
+          })
+        );
+  
+        setSavedPosts(posts);
+      } catch (error) {
+        console.error("Error fetching saved posts:", error);
+      }
     }
   };
   
-
-
   useEffect(() => {
     fetchSavedPosts();
   }, []);
+  
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
@@ -197,7 +230,15 @@ function Profile() {
                     <div>
                       <p className="p-2 mr-20 font-bold">{post.user || "Unknown User"}</p>
                       <h3 className="text-xl font-bold mt-4">{post.title}</h3>
-                      <p className="text-gray-500 mt-5 mr-20">{formatDate(post.timestamp)}</p>
+                      <div className="flex items-center text-gray-500 mt-5">
+                      <span>{formatDate(post.timestamp)}</span>
+              <div className="flex items-center ml-4">
+                <img src={like} alt="Likes" className="w-6 h-6 mr-2" />
+                <span>{post.likesCount}</span>
+                <img src={comment} alt="Comments" className="w-10 h-8 ml-4 mr-2" />
+                <span>{post.commentsCount}</span>
+              </div>
+            </div>
                     </div>
                   </div>
                   <div>

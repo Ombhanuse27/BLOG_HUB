@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams,useNavigate  } from 'react-router-dom';
 import { ref, get,set, update, child, push,remove } from "firebase/database";
-import { doc, updateDoc, getDoc,setDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc,setDoc,deleteDoc } from "firebase/firestore";
 import { rtdb, db } from './firebase';
 import userIcon from '../img/user.png';
 import { auth } from './firebase';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart, faComment, faShare, faBookmark } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisV,faHeart, faComment, faShare, faBookmark } from '@fortawesome/free-solid-svg-icons';
 import { faLinkedin, faTwitter, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 function PostDetail() {
@@ -19,6 +19,8 @@ function PostDetail() {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -124,17 +126,26 @@ const handleSavePost = async () => {
   const currentUser = auth.currentUser;
   if (currentUser) {
     const savedPostRef = doc(db, `users/${currentUser.uid}/savedPosts`, postId);
-    await setDoc(savedPostRef, {
-      title: post.title,
-      content: post.content,
-      timestamp: post.timestamp,
-      bannerUrl: post.bannerUrl,
-      category: post.category,
-      user: post.user,
-      userId: post.userId
-    });
-    setIsSaved(true);
-    alert("Post saved to your profile!");
+
+    if (isSaved) {
+      // If the post is already saved, remove it
+      await deleteDoc(savedPostRef);
+      setIsSaved(false);
+      alert("Post removed from your saved posts.");
+    } else {
+      // If the post is not saved, save it
+      await setDoc(savedPostRef, {
+        title: post.title,
+        content: post.content,
+        timestamp: post.timestamp,
+        bannerUrl: post.bannerUrl,
+        category: post.category,
+        user: post.user,
+        userId: post.userId,
+      });
+      setIsSaved(true);
+      alert("Post saved to your profile!");
+    }
   } else {
     console.log("User not logged in.");
   }
@@ -216,11 +227,50 @@ const handleSavePost = async () => {
     });
   };
 
+  const handleDeletePost = async () => {
+    try {
+      // Delete from Realtime Database
+      await remove(ref(rtdb, `posts/${postId}`));
+
+      // Delete from Firestore if necessary
+      await deleteDoc(doc(db, 'posts', postId));
+
+      alert("Post deleted successfully.");
+      navigate('/homepage');  // Redirect to homepage or another page
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post.");
+    }
+  };
+
+
   return (
     <div className="flex">
       <div className="p-4 bg-gray-100 mr-60 ml-40 relative">
-        <div className="bg-white p-4 shadow-md rounded">
-          <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
+        <div className="bg-white p-4 shadow-md rounded justify-between ">
+          <h1 className="text-2xl font-bold mb-4 ">{post.title}</h1>
+          {/* Three Dots Icon */}
+          <div className="flex items-end justify-end">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="text-gray-500"
+              >
+                <FontAwesomeIcon icon={faEllipsisV} />
+              </button>
+
+              {/* Popup menu for delete option */}
+              {showMenu && (
+                <div className="  absolute right-0 mt-2 w-28 bg-white border border-gray-300 rounded shadow-lg">
+                  <button
+                    onClick={handleDeletePost}
+                    className="block px-4 py-2 text-red-500 hover:bg-gray-100 w-full text-left"
+                  >
+                    Delete Post
+                  </button>
+                </div>
+              )}
+            </div>
+
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
               <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />

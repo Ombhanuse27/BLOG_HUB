@@ -8,6 +8,9 @@ import logout from '../img/log-out.png';
 import { auth, rtdb, db } from './firebase';
 import { getDoc, doc } from "firebase/firestore";
 import { ref, onValue } from "firebase/database";
+import like from '../img/like.png';
+import comment from '../img/comment.png';
+import write from '../img/write.png';
 
 function HomePage() {
   const [open, setOpen] = useState(false);
@@ -64,10 +67,23 @@ function HomePage() {
               const userData = userDoc.data();
               const userIconUrl = userData.photo || userIcon;
   
-              if ((selectedCategory === "For You" && followedTopics.includes(postCategory)) || postCategory === selectedCategory) {
+              if (
+                (selectedCategory === "For You" &&
+                  followedTopics.includes(postCategory)) ||
+                postCategory === selectedCategory
+              ) {
+                const likesCount = allPosts[key].likes
+                  ? Object.keys(allPosts[key].likes).length
+                  : 0;
+                const commentsCount = allPosts[key].comments
+                  ? Object.keys(allPosts[key].comments).length
+                  : 0;
+  
                 categoryPosts.push({
                   id: key,
                   userIconUrl,
+                  likesCount,
+                  commentsCount,
                   ...allPosts[key],
                 });
               }
@@ -95,6 +111,7 @@ function HomePage() {
       setSelectedContent("");
     }
   }, [selectedCategory, followedTopics]);
+  
    // Add followedTopics as dependency
    // Add followedTopics as dependency
   
@@ -143,10 +160,12 @@ function HomePage() {
           />
           </div>
         </div>
-        <div className='flex gap-20'>
-          <Link to="/addpost">
-            <h4 className="text-black cursor-pointer">Write</h4>
+        <div className='flex gap-2'>
+        <Link to="/addpost">
+          <img src={write} alt="Write" className="w-7 h-8 cursor-pointer" />
           </Link>
+            <h4 className="text-black cursor-pointer ml-2 m-2">Write</h4>
+          
 
           {/* Conditional Dropdown Rendering */}
           {/* <div className="App">
@@ -209,7 +228,15 @@ function HomePage() {
                   <div>
                     <p className="font-bold">{post.user || "Unknown User"}</p>
                     <h3 className="text-xl font-bold mt-4">{post.title}</h3>
-                    <p className="text-gray-500 mt-5">{formatDate(post.timestamp)}</p>
+                    <div className="flex items-center text-gray-500 mt-5">
+              <span>{formatDate(post.timestamp)}</span>
+              <div className="flex items-center ml-4">
+                <img src={like} alt="Likes" className="w-6 h-6 mr-2" />
+                <span>{post.likesCount}</span>
+                <img src={comment} alt="Comments" className="w-10 h-8 ml-4 mr-2" />
+                <span>{post.commentsCount}</span>
+              </div>
+            </div>
                   </div>
                 </div>
                 <div>
