@@ -17,7 +17,7 @@ import { Navbar } from "./components/Navbar";
 
 const Home = () => (
   <div className="h-20 px-5 flex items-center justify-between">
-    <h2 className="text-black font-bold">My Blog</h2>
+    <h2 className="text-black font-bold">Lets Blog</h2>
     <div className="flex gap-8">
       <h4 className="text-black cursor-pointer">Our Story</h4>
 

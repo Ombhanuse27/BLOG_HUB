@@ -178,9 +178,9 @@ const AddPost = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg">
+    <div className="max-w-5xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg flex">
       <div className="p-5 border-b mb-4">
-        <h3 className="text-xl font-bold text-gray-700">What's going on in your mind?</h3>
+        <h3 className="text-xl font-bold  text-gray-700">What's going on in your mind?</h3>
       </div>
       <form onSubmit={createPost} className="space-y-6">
         <div className="space-y-2">

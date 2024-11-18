@@ -6,6 +6,9 @@ import userIcon from '../img/user.png';
 import { storage } from "./firebase";
 import like from '../img/like.png';
 import comment from '../img/comment.png';
+import { rtdb } from "./firebase";
+import { onValue } from "firebase/database";
+import {get } from "firebase/database";
 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid'; 
@@ -55,76 +58,99 @@ function Profile() {
       console.error("Error logging out:", error.message);
     }
   }
-
   const fetchSavedPosts = async () => {
     const currentUser = auth.currentUser;
   
     if (currentUser) {
       try {
-        // Reference to the user's saved posts collection
+        // Fetch saved posts from Firestore
         const savedPostsRef = collection(db, `users/${currentUser.uid}/savedPosts`);
         const snapshot = await getDocs(savedPostsRef);
   
-        const posts = await Promise.all(
-          snapshot.docs.map(async (docSnap) => {
+        const posts = [];
+        const promises = [];
+  
+        snapshot.docs.forEach((docSnap) => {
+          const fetchPostDetails = async () => {
             const postData = docSnap.data();
+            const postId = docSnap.id;
   
-            // Default user icon
-            let userIconUrl = userIcon;
+            // Default values
+            let userIconUrl = "defaultUserIcon.png"; // Update with your default icon path
+            let likesCount = 0;
+            let commentsCount = 0;
   
-            // Fetch the user’s profile photo from Firestore
+            // Fetch user profile icon from Firestore
             if (postData.userId) {
               try {
-                const userDocRef = doc(db, "users", postData.userId);
+                const userDocRef = doc(db, `users/${postData.userId}`);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists()) {
-                  userIconUrl = userDocSnap.data().photo || userIcon;
+                  userIconUrl = userDocSnap.data()?.photo || userIconUrl;
                 }
               } catch (error) {
                 console.error(`Error fetching user profile for userId: ${postData.userId}`, error);
               }
             }
   
-            // Fetch the count of likes
-            let likeCount = 0;
-            try {
-              const likesRef = collection(db, `posts/${docSnap.id}/likes`);
-              const likesSnap = await getDocs(likesRef);
-              likeCount = likesSnap.size;
-            } catch (error) {
-              console.error(`Error fetching likes for postId: ${docSnap.id}`, error);
-            }
+            // Fetch like and comment counts from Realtime Database dynamically
+            const postRef = ref(rtdb, `posts/${postId}`);
+            const postSnapshotPromise = new Promise((resolve) => {
+              onValue(
+                postRef,
+                (snapshot) => {
+                  const postDetails = snapshot.val();
+                  likesCount = postDetails?.likes
+                    ? Object.keys(postDetails.likes).length
+                    : 0;
+                  commentsCount = postDetails?.comments
+                    ? Object.keys(postDetails.comments).length
+                    : 0;
   
-            // Fetch the count of comments
-            let commentCount = 0;
-            try {
-              const commentsRef = collection(db, `posts/${docSnap.id}/comments`);
-              const commentsSnap = await getDocs(commentsRef);
-              commentCount = commentsSnap.size;
-            } catch (error) {
-              console.error(`Error fetching comments for postId: ${docSnap.id}`, error);
-            }
+                  resolve({
+                    id: postId,
+                    userIcon: userIconUrl,
+                    likesCount,
+                    commentsCount,
+                    ...postData,
+                  });
+                },
+                (error) => {
+                  console.error(`Error fetching Realtime Database data for postId: ${postId}`, error);
+                  resolve({
+                    id: postId,
+                    userIcon: userIconUrl,
+                    likesCount,
+                    commentsCount,
+                    ...postData,
+                  });
+                }
+              );
+            });
   
-            return { 
-              id: docSnap.id, 
-              ...postData, 
-              userIcon: userIconUrl, 
-              likesCount: likeCount, 
-              commentsCount: commentCount 
-            };
-          })
-        );
+            return postSnapshotPromise;
+          };
   
-        setSavedPosts(posts);
+          promises.push(fetchPostDetails());
+        });
+  
+        // Wait for all promises to resolve
+        const results = await Promise.all(promises);
+        posts.push(...results);
+  
+        console.log("Fetched saved posts with dynamic counts:", posts);
+        return posts; // Return fetched posts
       } catch (error) {
         console.error("Error fetching saved posts:", error);
+        return [];
       }
     }
   };
-  
   useEffect(() => {
     fetchSavedPosts();
   }, []);
+  
+  
   
 
   const handleEditInputChange = (e) => {
@@ -228,7 +254,7 @@ function Profile() {
                   <div className="flex items-start">
                     <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full" />
                     <div>
-                      <p className="p-2 mr-20 font-bold">{post.user || "Unknown User"}</p>
+                      <p className="p-2 mr-20 w-40 font-bold">{post.user || "Unknown User"}</p>
                       <h3 className="text-xl font-bold mt-4">{post.title}</h3>
                       <div className="flex items-center text-gray-500 mt-5">
                       <span>{formatDate(post.timestamp)}</span>
