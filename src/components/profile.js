@@ -7,15 +7,13 @@ import { storage } from "./firebase";
 import like from '../img/like.png';
 import comment from '../img/comment.png';
 import { rtdb } from "./firebase";
-import { onValue } from "firebase/database";
-import {get } from "firebase/database";
-
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { v4 as uuidv4 } from 'uuid'; 
+import { onValue, ref } from "firebase/database";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { v4 as uuidv4 } from 'uuid';
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
-  const [selectedSection, setSelectedSection] = useState("");
+  const [selectedSection, setSelectedSection] = useState("Saved Posts");
   const [savedPosts, setSavedPosts] = useState([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editData, setEditData] = useState({
@@ -28,6 +26,7 @@ function Profile() {
     dob: ''
   });
 
+  // Fetch user data from Firestore
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -43,43 +42,32 @@ function Profile() {
     });
   };
 
-
-
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  async function handleLogout() {
-    try {
-      await auth.signOut();
-      window.location.href = "/SignIn";
-      console.log("User logged out successfully!");
-    } catch (error) {
-      console.error("Error logging out:", error.message);
-    }
-  }
+  // Fetch saved posts from Firestore and Realtime Database
   const fetchSavedPosts = async () => {
     const currentUser = auth.currentUser;
-  
+    console.log("Current User:", currentUser); // Debugging
+
     if (currentUser) {
       try {
         // Fetch saved posts from Firestore
         const savedPostsRef = collection(db, `users/${currentUser.uid}/savedPosts`);
         const snapshot = await getDocs(savedPostsRef);
-  
+        console.log("Snapshot docs:", snapshot.docs); // Debugging
+
         const posts = [];
         const promises = [];
-  
+
         snapshot.docs.forEach((docSnap) => {
           const fetchPostDetails = async () => {
             const postData = docSnap.data();
             const postId = docSnap.id;
-  
+            console.log("Post Data:", postData); // Debugging
+
             // Default values
-            let userIconUrl = "defaultUserIcon.png"; // Update with your default icon path
+            let userIconUrl = userIcon; // Use the default user icon
             let likesCount = 0;
             let commentsCount = 0;
-  
+
             // Fetch user profile icon from Firestore
             if (postData.userId) {
               try {
@@ -92,21 +80,17 @@ function Profile() {
                 console.error(`Error fetching user profile for userId: ${postData.userId}`, error);
               }
             }
-  
-            // Fetch like and comment counts from Realtime Database dynamically
+
+            // Fetch like and comment counts from Realtime Database
             const postRef = ref(rtdb, `posts/${postId}`);
             const postSnapshotPromise = new Promise((resolve) => {
               onValue(
                 postRef,
                 (snapshot) => {
                   const postDetails = snapshot.val();
-                  likesCount = postDetails?.likes
-                    ? Object.keys(postDetails.likes).length
-                    : 0;
-                  commentsCount = postDetails?.comments
-                    ? Object.keys(postDetails.comments).length
-                    : 0;
-  
+                  likesCount = postDetails?.likes ? Object.keys(postDetails.likes).length : 0;
+                  commentsCount = postDetails?.comments ? Object.keys(postDetails.comments).length : 0;
+
                   resolve({
                     id: postId,
                     userIcon: userIconUrl,
@@ -127,32 +111,41 @@ function Profile() {
                 }
               );
             });
-  
+
             return postSnapshotPromise;
           };
-  
+
           promises.push(fetchPostDetails());
         });
-  
+
         // Wait for all promises to resolve
         const results = await Promise.all(promises);
-        posts.push(...results);
-  
-        console.log("Fetched saved posts with dynamic counts:", posts);
-        return posts; // Return fetched posts
+        console.log("Saved Posts Results:", results); // Debugging
+        setSavedPosts(results); // Update the savedPosts state
       } catch (error) {
         console.error("Error fetching saved posts:", error);
-        return [];
       }
     }
   };
+
+  // Fetch user data and saved posts on component mount
   useEffect(() => {
+    fetchUserData();
     fetchSavedPosts();
   }, []);
-  
-  
-  
 
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      window.location.href = "/SignIn";
+      console.log("User logged out successfully!");
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    }
+  };
+
+  // Handle input changes in the edit profile form
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     setEditData((prevData) => ({
@@ -161,24 +154,28 @@ function Profile() {
     }));
   };
 
+  // Save profile changes
   const handleSaveProfile = async () => {
     try {
       const user = auth.currentUser;
       if (user) {
         let photoURL = userDetails.photo;
 
+        // Upload new photo if selected
         if (editData.photo && editData.photo instanceof File) {
-          const storageRef = ref(storage, `images/${user.uid}/${uuidv4()}`);
-          await uploadBytes(storageRef, editData.photo);
-          photoURL = await getDownloadURL(storageRef);
+          const fileRef = storageRef(storage, `images/${user.uid}/${uuidv4()}`);
+          await uploadBytes(fileRef, editData.photo);
+          photoURL = await getDownloadURL(fileRef);
         }
 
+        // Update user data in Firestore
         const userDocRef = doc(db, "users", user.uid);
         await updateDoc(userDocRef, {
           ...editData,
           photo: photoURL,
         });
 
+        // Update local state
         setUserDetails({ ...userDetails, ...editData, photo: photoURL });
         setShowEditProfile(false);
         console.log("Profile updated successfully!");
@@ -188,16 +185,19 @@ function Profile() {
     }
   };
 
+  // Format timestamp to a readable date
   const formatDate = (timestamp) => {
+    if (!timestamp) return "No Date";
     const date = new Date(timestamp);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric"
+      day: "numeric",
     });
   };
 
   return (
+    <div className="w-full bg-">
     <div className="text-center">
       {userDetails ? (
         <>
@@ -206,6 +206,7 @@ function Profile() {
               src={userDetails.photo || userIcon}
               width={"40%"}
               className="rounded-full mt-4 w-20 h-20 object-cover"
+              alt="Profile"
             />
           </div>
           <h3 className="text-center mt-4">Welcome {userDetails.firstName} 🙏🙏</h3>
@@ -224,7 +225,7 @@ function Profile() {
       )}
 
       <nav className="flex space-x-4 mt-4 bg-gray-200 p-4">
-      <span
+        <span
           onClick={() => setSelectedSection("Saved Posts")}
           className={`p-2 cursor-pointer ${
             selectedSection === "Saved Posts" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
@@ -243,46 +244,46 @@ function Profile() {
       </nav>
 
       <div className="w-full">
-      {selectedSection === "Saved Posts" ? (
+        {selectedSection === "Saved Posts" ? (
           <div>
-        <h1 className="text-2xl mt-5 flex ml-10 font-bold mb-4">Showing the Saved Posts</h1>
-        <div className="p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
-          {savedPosts.length > 0 ? (
-            savedPosts.map(post => (
-              <Link to={`/post/${post.id}`} key={post.id}>
-                <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
-                  <div className="flex items-start">
-                    <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full" />
-                    <div>
-                      <p className="p-2 mr-20 w-40 font-bold">{post.user || "Unknown User"}</p>
-                      <h3 className="text-xl font-bold mt-4">{post.title}</h3>
-                      <div className="flex items-center text-gray-500 mt-5">
-                      <span>{formatDate(post.timestamp)}</span>
-              <div className="flex items-center ml-4">
-                <img src={like} alt="Likes" className="w-6 h-6 mr-2" />
-                <span>{post.likesCount}</span>
-                <img src={comment} alt="Comments" className="w-10 h-8 ml-4 mr-2" />
-                <span>{post.commentsCount}</span>
-              </div>
-            </div>
+            <h1 className="text-2xl mt-5 flex ml-10 font-bold mb-4">Showing the Saved Posts</h1>
+            <div className="p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
+              {savedPosts.length > 0 ? (
+                savedPosts.map((post) => (
+                  <Link to={`/post/${post.id}`} key={post.id}>
+                    <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
+                      <div className="flex items-start">
+                        <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full" />
+                        <div>
+                          <p className="p-2 mr-20 w-60 font-bold">{post.user || "Unknown User"}</p>
+                          <h3 className="text-xl font-bold mt-4">{post.title || "No Title"}</h3>
+                          <div className="flex items-center text-gray-500 mt-5">
+                            <span>{formatDate(post.timestamp)}</span>
+                            <div className="flex items-center ml-4">
+                              <img src={like} alt="Likes" className="w-6 h-6 mr-2" />
+                              <span>{post.likesCount}</span>
+                              <img src={comment} alt="Comments" className="w-10 h-8 ml-4 mr-2" />
+                              <span>{post.commentsCount}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <img
+                          src={post.bannerUrl || "https://via.placeholder.com/150"}
+                          alt={post.title || "Post"}
+                          className="w-64 h-32 object-cover rounded"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <img
-                      src={post.bannerUrl}
-                      alt={post.title}
-                      className="w-64 h-32 object-cover rounded"
-                    />
-                  </div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <p>No saved posts.</p>
-          )}
-        </div>
-      </div>
-    ) : selectedSection === "About" ? (
+                  </Link>
+                ))
+              ) : (
+                <p>No saved posts.</p>
+              )}
+            </div>
+          </div>
+        ) : selectedSection === "About" ? (
           <div className="p-6 bg-gray-100 text-left">
             <h2 className="text-2xl font-bold mb-4">About</h2>
             <p><strong>Name:</strong> {userDetails.name || "N/A"}</p>
@@ -311,6 +312,7 @@ function Profile() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

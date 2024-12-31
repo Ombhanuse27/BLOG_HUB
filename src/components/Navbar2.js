@@ -17,7 +17,8 @@ import SignIn from "./SignIn";
 import  loki from "../img/loki2.jpg";
 import CategoryPage from "./CategoryPage";
 
-export function Navbar() {
+
+export function Navbar2() {
   const [open, setOpen] = useState(false);
   const navigate=useNavigate();
 
@@ -33,7 +34,7 @@ export function Navbar() {
       label: "Profile",
       href: "/profile", // Corrected Profile path
       icon: (
-        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+        <IconUserBolt className="text-neutral-700 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
@@ -102,7 +103,7 @@ export function Navbar() {
       </Routes> */}
 
       {/* Rendering HomePage component */}
-      <HomePage />
+      <Profile/>
       
     </div>
   );

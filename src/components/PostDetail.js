@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { useParams,useNavigate  } from 'react-router-dom';
 import { ref, get,set, update, child, push,remove } from "firebase/database";
 import { doc, updateDoc, getDoc,setDoc,deleteDoc } from "firebase/firestore";
 import { rtdb, db } from './firebase';
 import userIcon from '../img/user.png';
 import { auth } from './firebase';
+import { onAuthStateChanged } from "firebase/auth";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV,faHeart, faComment, faShare, faBookmark } from '@fortawesome/free-solid-svg-icons';
 import { faLinkedin, faTwitter, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
@@ -20,37 +21,67 @@ function PostDetail() {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
+  const menuRef = useRef(null); // Create a ref for the menu
+
+  // Handle clicks outside the menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false); // Hide the menu
+      }
+    };
+
+    // Add event listener when the menu is shown
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup the event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user.uid);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
   useEffect(() => {
     const fetchPostData = async () => {
       const snapshot = await get(ref(rtdb, `posts/${postId}`));
       if (snapshot.exists()) {
         const postData = snapshot.val();
-  
-        // Convert likes to an array if it's an object, otherwise default to an empty array
-        // postData.likes = postData.likes ? Object.keys(postData.likes) : [];
-  
+    
         const postUserRef = doc(db, `users/${postData.userId}`);
         const postUserDoc = await getDoc(postUserRef);
-  
+    
         if (postUserDoc.exists()) {
           const postUserData = postUserDoc.data();
           postData.userIcon = postUserData.photo || userIcon;
         }
-  
+    
         const commentsWithPhotos = await Promise.all(
-          Object.values(postData.comments || {}).map(async (comment) => {
+          Object.entries(postData.comments || {}).map(async ([commentId, comment]) => {
             const commentUserRef = doc(db, `users/${comment.userId}`);
             const commentUserDoc = await getDoc(commentUserRef);
-  
+    
             return {
               ...comment,
+              id: commentId, // Add the commentId to the comment object
               userIcon: commentUserDoc.exists() ? commentUserDoc.data().photo || userIcon : userIcon,
             };
           })
         );
-  
+    
         setPost(postData);
         setComments(commentsWithPhotos);
         const currentUser = auth.currentUser;
@@ -129,11 +160,14 @@ const handleSavePost = async () => {
 
     if (isSaved) {
       // If the post is already saved, remove it
+      console.log("Removing post from saved posts...");
       await deleteDoc(savedPostRef);
       setIsSaved(false);
+      console.log("Post removed from saved posts.");
       alert("Post removed from your saved posts.");
     } else {
       // If the post is not saved, save it
+      console.log("Saving post to saved posts...");
       await setDoc(savedPostRef, {
         title: post.title,
         content: post.content,
@@ -144,6 +178,7 @@ const handleSavePost = async () => {
         userId: post.userId,
       });
       setIsSaved(true);
+      console.log("Post saved to saved posts.");
       alert("Post saved to your profile!");
     }
   } else {
@@ -228,19 +263,35 @@ const handleSavePost = async () => {
   };
 
   const handleDeletePost = async () => {
-    try {
-      // Delete from Realtime Database
-      await remove(ref(rtdb, `posts/${postId}`));
-
-      // Delete from Firestore if necessary
-      await deleteDoc(doc(db, 'posts', postId));
-
-      alert("Post deleted successfully.");
-      navigate('/homepage');  // Redirect to homepage or another page
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Failed to delete post.");
+    const confirmDelete = window.confirm("Do you want to delete the post?");
+    if (confirmDelete) {
+      try {
+        // Delete from Realtime Database
+        await remove(ref(rtdb, `posts/${postId}`));
+  
+        // Delete from Firestore if necessary
+        await deleteDoc(doc(db, 'posts', postId));
+  
+        alert("Post deleted successfully.");
+        navigate('/homepage');  // Redirect to homepage or another page
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        alert("Failed to delete post.");
+      }
     }
+  };
+
+  const handleDelete = (commentId) => {
+    const commentRef = ref(rtdb, `posts/${postId}/comments/${commentId}`);
+    remove(commentRef)
+      .then(() => {
+        console.log("Comment deleted successfully");
+        // Update the UI by removing the deleted comment
+        setComments(comments.filter(comment => comment.id !== commentId));
+      })
+      .catch((error) => {
+        console.error("Error deleting comment:", error);
+      });
   };
 
 
@@ -251,25 +302,30 @@ const handleSavePost = async () => {
           <h1 className="text-2xl font-bold mb-4 ">{post.title}</h1>
           {/* Three Dots Icon */}
           <div className="flex items-end justify-end">
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="text-gray-500"
-              >
-                <FontAwesomeIcon icon={faEllipsisV} />
-              </button>
+  {/* Conditionally render the three dots menu */}
+  {currentUser === post.userId && (
+    <>
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        className="text-gray-500"
+      >
+        <FontAwesomeIcon icon={faEllipsisV} />
+      </button>
 
-              {/* Popup menu for delete option */}
-              {showMenu && (
-                <div className="  absolute right-0 mt-2 w-28 bg-white border border-gray-300 rounded shadow-lg">
-                  <button
-                    onClick={handleDeletePost}
-                    className="block px-4 py-2 text-red-500 hover:bg-gray-100 w-full text-left"
-                  >
-                    Delete Post
-                  </button>
-                </div>
-              )}
-            </div>
+      {/* Popup menu for delete option */}
+      {showMenu && (
+        <div ref={menuRef} className="absolute right-0 mt-2 w-28 bg-white border border-gray-300 rounded shadow-lg">
+          <button
+            onClick={handleDeletePost}
+            className="block px-4 py-2 text-red-500 hover:bg-gray-100 w-full text-left"
+          >
+            Delete Post
+          </button>
+        </div>
+      )}
+    </>
+  )}
+</div>
 
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
@@ -337,12 +393,31 @@ const handleSavePost = async () => {
           </div>
           <div className="mt-4">
             {comments.map((comment, index) => (
+              <div
+              key={comment.id}
+              className="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 relative"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                if (currentUser === comment.userId) {
+                  const confirmDelete = window.confirm(
+                    "Do you want to delete this comment?"
+                  );
+                  if (confirmDelete) {
+                    handleDelete(comment.id);
+                  }
+                } else {
+                  alert("You are not authorized to delete this comment.");
+                }
+              }}
+            >
+            
               <div key={index} className="flex items-center mb-4">
                 <img src={comment.userIcon || userIcon} alt="User" className="w-8 h-8 rounded-full mr-3" />
                 <div className="bg-gray-100 p-2 rounded-md">
                   <p><strong>{comment.userName}</strong></p>
                   <p>{comment.content}</p>
                 </div>
+              </div>
               </div>
             ))}
           </div>

@@ -3,15 +3,26 @@ import { useNavigate } from "react-router-dom";
 import { db, auth } from './firebase'; 
 import { doc, setDoc, getDoc } from "firebase/firestore"; 
 
+
+// Import icons or images for categories
+import dataScienceIcon from 'img/ds.png'
+import pythonIcon from 'img/python.webp'
+import aiIcon from 'img/ai.webp'
+import softwareDevIcon from 'img/softwaredev.webp'
+import javascriptIcon from 'img/js.webp'
+import recipeIcon from 'img/recipe.webp'
+import machineLearningIcon from 'img/machinelearning.webp'
+import technologyIcon from 'img/tech.png'
+
 const topics = [
-  { name: "Data Science", followed: false },
-  { name: "Python", followed: false },
-  { name: "Artificial Intelligence", followed: false },
-  { name: "Software Development", followed: false },
-  { name: "Javascript", followed: false },
-  { name: "Recipe", followed: false },
-  { name: "Machine Learning", followed: false },
-  { name: "Technology", followed: false },
+  { name: "Data Science", icon: dataScienceIcon, followed: false },
+  { name: "Python", icon: pythonIcon, followed: false },
+  { name: "Artificial Intelligence", icon: aiIcon, followed: false },
+  { name: "Software Development", icon: softwareDevIcon, followed: false },
+  { name: "Javascript", icon: javascriptIcon, followed: false },
+  { name: "Recipe", icon: recipeIcon, followed: false },
+  { name: "Machine Learning", icon: machineLearningIcon, followed: false },
+  { name: "Technology", icon: technologyIcon, followed: false },
 ];
 
 function CategoryPage() {
@@ -81,14 +92,21 @@ function CategoryPage() {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-center text-xl font-semibold">Topics to follow</h2>
+    <div className="p-4 max-w-md mx-auto">
+      <h2 className="text-center text-2xl font-bold mb-6">Topics to Follow</h2>
       <ul className="space-y-4">
         {categories.map((category, index) => (
-          <li key={category.name} className="flex justify-between items-center">
-            <span>{category.name}</span>
+          <li key={category.name} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-center">
+              <img src={category.icon} alt={category.name} className="w-8 h-8 mr-4" />
+              <span className="text-lg font-medium">{category.name}</span>
+            </div>
             <button
-              className={`p-2 rounded ${category.followed ? "bg-gray-500 text-white" : "bg-blue-600 text-white"}`}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                category.followed
+                  ? "bg-gray-500 text-white hover:bg-gray-600"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
               onClick={() => toggleFollow(index)}
             >
               {category.followed ? "Following" : "Follow"}
@@ -97,9 +115,9 @@ function CategoryPage() {
         ))}
       </ul>
 
-      <div className="mt-6 text-center">
+      <div className="mt-8 text-center">
         <button 
-          className="p-2 bg-green-600 text-white rounded"
+          className="px-6 py-2 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
           onClick={handleContinue}
         >
           Continue to HomePage

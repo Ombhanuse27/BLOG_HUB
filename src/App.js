@@ -14,6 +14,7 @@ import CategoryPage from "./components/CategoryPage";
 import PostDetail from "./components/PostDetail";
 import LandingPage from "./LandingPage";
 import { Navbar } from "./components/Navbar";
+import { Navbar2 } from "./components/Navbar2";
 
 const Home = () => (
   <div className="h-20 px-5 flex items-center justify-between">
@@ -60,7 +61,7 @@ const App = () => {
         <Route path="/post/:postId" element={<PostDetail />} />
         <Route path="/categorypage" element={<CategoryPage />} />
         {/* <Route path="/navbar" element={<Navbar />} /> */}
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<Navbar2/>} />
 
         <Route
           path="/signin"

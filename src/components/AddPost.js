@@ -178,11 +178,11 @@ const AddPost = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg flex">
-      <div className="p-5 border-b mb-4">
+    <div className="max-w-5xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg flex-col ">
+      <div className="p-5 border-b mb-4 justify-center items-center flex flex-col">
         <h3 className="text-xl font-bold  text-gray-700">What's going on in your mind?</h3>
-      </div>
-      <form onSubmit={createPost} className="space-y-6">
+        </div>
+      <form onSubmit={createPost} className="space-y-6 ">
         <div className="space-y-2">
           <label htmlFor="title" className="block text-sm font-medium text-gray-700">
             Post Title
