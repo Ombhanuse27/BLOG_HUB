@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
-import { collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { Link } from "react-router-dom";
-import userIcon from '../img/user.png';
+import userIcon from "../img/user.png";
 import { storage } from "./firebase";
-import like from '../img/like.png';
-import comment from '../img/comment.png';
+import like from "../img/like.png";
+import comment from "../img/comment.png";
 import { rtdb } from "./firebase";
 import { onValue, ref } from "firebase/database";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
-import { v4 as uuidv4 } from 'uuid';
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
@@ -17,13 +27,13 @@ function Profile() {
   const [savedPosts, setSavedPosts] = useState([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editData, setEditData] = useState({
-    photo: '',
-    name: '',
-    address: '',
-    phone: '',
-    socialLink: '',
-    location: '',
-    dob: ''
+    photo: "",
+    name: "",
+    address: "",
+    phone: "",
+    socialLink: "",
+    location: "",
+    dob: "",
   });
 
   // Fetch user data from Firestore
@@ -50,7 +60,10 @@ function Profile() {
     if (currentUser) {
       try {
         // Fetch saved posts from Firestore
-        const savedPostsRef = collection(db, `users/${currentUser.uid}/savedPosts`);
+        const savedPostsRef = collection(
+          db,
+          `users/${currentUser.uid}/savedPosts`
+        );
         const snapshot = await getDocs(savedPostsRef);
         console.log("Snapshot docs:", snapshot.docs); // Debugging
 
@@ -77,7 +90,10 @@ function Profile() {
                   userIconUrl = userDocSnap.data()?.photo || userIconUrl;
                 }
               } catch (error) {
-                console.error(`Error fetching user profile for userId: ${postData.userId}`, error);
+                console.error(
+                  `Error fetching user profile for userId: ${postData.userId}`,
+                  error
+                );
               }
             }
 
@@ -88,8 +104,12 @@ function Profile() {
                 postRef,
                 (snapshot) => {
                   const postDetails = snapshot.val();
-                  likesCount = postDetails?.likes ? Object.keys(postDetails.likes).length : 0;
-                  commentsCount = postDetails?.comments ? Object.keys(postDetails.comments).length : 0;
+                  likesCount = postDetails?.likes
+                    ? Object.keys(postDetails.likes).length
+                    : 0;
+                  commentsCount = postDetails?.comments
+                    ? Object.keys(postDetails.comments).length
+                    : 0;
 
                   resolve({
                     id: postId,
@@ -100,7 +120,10 @@ function Profile() {
                   });
                 },
                 (error) => {
-                  console.error(`Error fetching Realtime Database data for postId: ${postId}`, error);
+                  console.error(
+                    `Error fetching Realtime Database data for postId: ${postId}`,
+                    error
+                  );
                   resolve({
                     id: postId,
                     userIcon: userIconUrl,
@@ -197,122 +220,208 @@ function Profile() {
   };
 
   return (
-    <div className="w-full bg-">
-    <div className="text-center">
-      {userDetails ? (
-        <>
-          <div className="flex justify-center">
-            <img
-              src={userDetails.photo || userIcon}
-              width={"40%"}
-              className="rounded-full mt-4 w-20 h-20 object-cover"
-              alt="Profile"
-            />
-          </div>
-          <h3 className="text-center mt-4">Welcome {userDetails.firstName} 🙏🙏</h3>
-          <div className="text-center mt-2">
-            <p>Email: {userDetails.email}</p>
-            <button
-              className="text-xl mt-2 text-green-500"
-              onClick={() => setShowEditProfile(true)}
-            >
-              Edit Profile
-            </button>
-          </div>
-        </>
-      ) : (
-        <p>Loading...</p>
-      )}
+    <div className="w-full min-h-screen bg-gray-100 py-6 px-4">
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
+        {userDetails ? (
+          <>
+            <div className="flex flex-col items-center">
+              <img
+                src={userDetails.photo || userIcon}
+                className="w-24 h-24 rounded-full object-cover border-4 border-gray-300 shadow"
+                alt="Profile"
+              />
+              <h3 className="mt-4 text-xl font-semibold">
+                Welcome {userDetails.firstName} 🙏
+              </h3>
+              <p className="text-gray-600 mt-1">Email: {userDetails.email}</p>
+              <button
+                className="mt-3 text-blue-600 hover:underline"
+                onClick={() => setShowEditProfile(true)}
+              >
+                Edit Profile
+              </button>
+            </div>
 
-      <nav className="flex space-x-4 mt-4 bg-gray-200 p-4">
-        <span
-          onClick={() => setSelectedSection("Saved Posts")}
-          className={`p-2 cursor-pointer ${
-            selectedSection === "Saved Posts" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
-          }`}
-        >
-          Saved Posts
-        </span>
-        <span
-          onClick={() => setSelectedSection("About")}
-          className={`p-2 cursor-pointer ${
-            selectedSection === "About" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
-          }`}
-        >
-          About
-        </span>
-      </nav>
+            {/* Tabs */}
+            <div className="flex justify-center space-x-4 mt-6 border-b pb-2">
+              {["Saved Posts", "About"].map((section) => (
+                <button
+                  key={section}
+                  onClick={() => setSelectedSection(section)}
+                  className={`px-4 py-2 font-medium ${
+                    selectedSection === section
+                      ? "border-b-4 border-blue-600 text-blue-600"
+                      : "text-gray-500 hover:text-blue-600"
+                  }`}
+                >
+                  {section}
+                </button>
+              ))}
+            </div>
 
-      <div className="w-full">
-        {selectedSection === "Saved Posts" ? (
-          <div>
-            <h1 className="text-2xl mt-5 flex ml-10 font-bold mb-4">Showing the Saved Posts</h1>
-            <div className="p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
-              {savedPosts.length > 0 ? (
-                savedPosts.map((post) => (
-                  <Link to={`/post/${post.id}`} key={post.id}>
-                    <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
-                      <div className="flex items-start">
-                        <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full" />
-                        <div>
-                          <p className="p-2 mr-20 w-60 font-bold">{post.user || "Unknown User"}</p>
-                          <h3 className="text-xl font-bold mt-4">{post.title || "No Title"}</h3>
-                          <div className="flex items-center text-gray-500 mt-5">
-                            <span>{formatDate(post.timestamp)}</span>
-                            <div className="flex items-center ml-4">
-                              <img src={like} alt="Likes" className="w-6 h-6 mr-2" />
-                              <span>{post.likesCount}</span>
-                              <img src={comment} alt="Comments" className="w-10 h-8 ml-4 mr-2" />
-                              <span>{post.commentsCount}</span>
+            {showEditProfile && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-white p-6 rounded-xl w-96">
+                  <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
+                  {/* Photo input */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setEditData((prev) => ({
+                        ...prev,
+                        photo: e.target.files[0],
+                      }))
+                    }
+                    className="mb-2"
+                  />
+                  {/* Text fields */}
+                  {[
+                    "name",
+                    "address",
+                    "phone",
+                    "socialLink",
+                    "location",
+                    "dob",
+                  ].map((field) => (
+                    <input
+                      key={field}
+                      name={field}
+                      placeholder={field[0].toUpperCase() + field.slice(1)}
+                      value={editData[field]}
+                      onChange={handleEditInputChange}
+                      className="w-full mb-2 p-2 border rounded"
+                    />
+                  ))}
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <button
+                      onClick={() => setShowEditProfile(false)}
+                      className="px-4 py-2 bg-gray-300 rounded"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveProfile}
+                      className="px-4 py-2 bg-blue-600 text-white rounded"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Content Sections */}
+            <div className="mt-6">
+              {selectedSection === "Saved Posts" ? (
+                <>
+                  <h2 className="text-2xl font-semibold mb-4">
+                    Your Saved Posts
+                  </h2>
+                  {savedPosts.length > 0 ? (
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                      {savedPosts.map((post) => (
+                        <Link to={`/post/${post.id}`} key={post.id}>
+                          <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition flex">
+                            {/* Left: Post Content */}
+                            <div className="flex-1 pr-4">
+                              <div className="flex items-start space-x-4">
+                                <img
+                                  src={post.userIcon || userIcon}
+                                  alt="User"
+                                  className="w-10 h-10 rounded-full"
+                                />
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-gray-800">
+                                    {post.user || "Unknown"}
+                                  </p>
+                                  <h3 className="text-lg font-bold mt-1">
+                                    {post.title || "No Title"}
+                                  </h3>
+                                  <div className="flex items-center text-sm text-gray-500 mt-2">
+                                    <span>{formatDate(post.timestamp)}</span>
+                                    <div className="flex items-center ml-4 space-x-2">
+                                      <img
+                                        src={like}
+                                        alt="Likes"
+                                        className="w-5 h-5"
+                                      />
+                                      <span>{post.likesCount}</span>
+                                      <img
+                                        src={comment}
+                                        alt="Comments"
+                                        className="w-6 h-6 ml-4"
+                                      />
+                                      <span>{post.commentsCount}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
+
+                            {/* Right: Banner Image */}
+                            <img
+                              src={
+                                post.bannerUrl ||
+                                "https://via.placeholder.com/150"
+                              }
+                              alt={post.title || "Post"}
+                              className="w-32 h-24 object-cover rounded"
+                            />
                           </div>
-                        </div>
-                      </div>
-                      <div>
-                        <img
-                          src={post.bannerUrl || "https://via.placeholder.com/150"}
-                          alt={post.title || "Post"}
-                          className="w-64 h-32 object-cover rounded"
-                        />
-                      </div>
+                        </Link>
+                      ))}
                     </div>
-                  </Link>
-                ))
+                  ) : (
+                    <p className="text-gray-500">
+                      You haven’t saved any posts yet.
+                    </p>
+                  )}
+                </>
               ) : (
-                <p>No saved posts.</p>
+                <>
+                  <h2 className="text-2xl font-semibold mb-4">About</h2>
+                  <div className="space-y-2 text-gray-700">
+                    <p>
+                      <span className="font-medium">Name:</span>{" "}
+                      {userDetails.name || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Address:</span>{" "}
+                      {userDetails.address || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Phone:</span>{" "}
+                      {userDetails.phone || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Social Link:</span>{" "}
+                      <a
+                        href={userDetails.socialLink}
+                        className="text-blue-500 hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {userDetails.socialLink || "N/A"}
+                      </a>
+                    </p>
+                    <p>
+                      <span className="font-medium">Location:</span>{" "}
+                      {userDetails.location || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Date of Birth:</span>{" "}
+                      {userDetails.dob || "N/A"}
+                    </p>
+                  </div>
+                </>
               )}
             </div>
-          </div>
-        ) : selectedSection === "About" ? (
-          <div className="p-6 bg-gray-100 text-left">
-            <h2 className="text-2xl font-bold mb-4">About</h2>
-            <p><strong>Name:</strong> {userDetails.name || "N/A"}</p>
-            <p><strong>Address:</strong> {userDetails.address || "N/A"}</p>
-            <p><strong>Phone:</strong> {userDetails.phone || "N/A"}</p>
-            <p><strong>Social Link:</strong> {userDetails.socialLink || "N/A"}</p>
-            <p><strong>Location:</strong> {userDetails.location || "N/A"}</p>
-            <p><strong>Date of Birth:</strong> {userDetails.dob || "N/A"}</p>
-          </div>
-        ) : null}
+          </>
+        ) : (
+          <p className="text-center">Loading profile...</p>
+        )}
       </div>
-
-      {showEditProfile && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h2 className="text-lg font-bold mb-4">Edit Profile</h2>
-            <input type="file" name="photo" className="mb-3" onChange={(e) => setEditData({ ...editData, photo: e.target.files[0] })} />
-            <input type="text" name="name" placeholder="Name" value={editData.name} className="mb-2 p-2 border" onChange={handleEditInputChange} />
-            <input type="text" name="address" placeholder="Address" value={editData.address} className="mb-2 p-2 border" onChange={handleEditInputChange} />
-            <input type="tel" name="phone" placeholder="Phone Number" value={editData.phone} className="mb-2 p-2 border" onChange={handleEditInputChange} />
-            <input type="text" name="socialLink" placeholder="Social Media Link" value={editData.socialLink} className="mb-2 p-2 border" onChange={handleEditInputChange} />
-            <input type="text" name="location" placeholder="Location" value={editData.location} className="mb-2 p-2 border" onChange={handleEditInputChange} />
-            <input type="date" name="dob" placeholder="Date of Birth" value={editData.dob} className="mb-2 p-2 border" onChange={handleEditInputChange} />
-            <button className="bg-blue-600 text-white p-2 rounded mt-4" onClick={handleSaveProfile}>Save</button>
-            <button className="bg-red-500 text-white p-2 rounded mt-2" onClick={() => setShowEditProfile(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
-    </div>
     </div>
   );
 }

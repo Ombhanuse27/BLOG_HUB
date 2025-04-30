@@ -36,6 +36,7 @@ import jai from "./images/jai.s.webp";
 import r2 from "./images/r2.jpg";
 import mr3 from "./images/r3.jpg";
 import r4 from "./images/r4.jpg";
+import signin from "./components/SignIn";
 
 const LandingPage = () => {
   useEffect(() => {
@@ -75,6 +76,10 @@ const LandingPage = () => {
     };
   }, []);
 
+  const handleClk = () => { 
+    window.location.href = "/signin";
+  }
+
   return (
     <div>
       {/* Navbar Section */}
@@ -102,7 +107,7 @@ const LandingPage = () => {
             world. We offer insightful tips, exciting categories, and more to
             help you on your blogging journey.
           </p>
-          <button>Explore More</button>
+          <button onClick={handleClk}>Explore More</button>
         </div>
 
         <div className="divider"></div>

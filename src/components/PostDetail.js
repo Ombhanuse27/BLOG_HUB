@@ -7,6 +7,9 @@ import userIcon from '../img/user.png';
 import { auth } from './firebase';
 import { onAuthStateChanged } from "firebase/auth";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import app from './firebase';
+import EmojiPicker from 'emoji-picker-react';
+import StickerPicker from './stickerPicker';
 import { faEllipsisV,faHeart, faComment, faShare, faBookmark } from '@fortawesome/free-solid-svg-icons';
 import { faLinkedin, faTwitter, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
@@ -22,6 +25,12 @@ function PostDetail() {
   const [isSaved, setIsSaved] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [reaction, setReaction] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
+  const [user, setUser] = useState(null);
+  const [commentImage, setCommentImage] = useState(null);
+  const [replyInputs, setReplyInputs] = useState({});
   const navigate = useNavigate();
 
   const menuRef = useRef(null); // Create a ref for the menu
