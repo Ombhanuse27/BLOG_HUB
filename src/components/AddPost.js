@@ -177,101 +177,112 @@ const AddPost = () => {
     setImage(event.target.files[0]);
   };
 
-  return (
-    <div className="max-w-5xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg flex-col ">
-      <div className="p-5 border-b mb-4 justify-center items-center flex flex-col">
-        <h3 className="text-xl font-bold  text-gray-700">What's going on in your mind?</h3>
-        </div>
-      <form onSubmit={createPost} className="space-y-6 ">
-        <div className="space-y-2">
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Post Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            placeholder="Enter your post title here"
-            name="title"
-            value={post.title}
-            onChange={fieldChanged}
-            className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
+ return (
+  <div className="max-w-5xl w-full mx-auto my-8 p-4 sm:p-6 bg-white shadow-md rounded-lg flex flex-col">
+    <div className="p-4 sm:p-5 border-b mb-6 flex justify-center items-center">
+      <h3 className="text-lg sm:text-xl font-bold text-center text-gray-700">
+        What's going on in your mind?
+      </h3>
+    </div>
 
-        <div className="space-y-2">
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-            Post Content
-          </label>
+    <form onSubmit={createPost} className="space-y-6 w-full">
+      {/* Post Title */}
+      <div className="space-y-2">
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          Post Title
+        </label>
+        <input
+          type="text"
+          id="title"
+          placeholder="Enter your post title here"
+          name="title"
+          value={post.title}
+          onChange={fieldChanged}
+          className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+        />
+      </div>
+
+      {/* Post Content */}
+      <div className="space-y-2">
+        <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+          Post Content
+        </label>
+        <div className="block w-full">
           <JoditEditor
             ref={editor}
             value={post.content}
             onChange={contentFieldChanged}
-            className="block w-full border border-gray-300 rounded-lg"
+            className="rounded-lg"
           />
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-            Select Post Banner
-          </label>
-          <input
-            id="image"
-            type="file"
-            onChange={handleFileChange}
-            className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
+      {/* Banner Image */}
+      <div className="space-y-2">
+        <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+          Select Post Banner
+        </label>
+        <input
+          id="image"
+          type="file"
+          onChange={handleFileChange}
+          className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+        />
+      </div>
 
-        <div className="space-y-2">
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-            Post Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={post.category}
-            onChange={fieldChanged}
-            className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-          >
-            <option disabled value="">
-              -- Select category --
-            </option>
-            {categories.length > 0 ? (
-              categories.map((category) => (
-                <option value={category.categoryId} key={category.categoryId}>
-                  {category.categoryTitle}
-                </option>
-              ))
-            ) : (
-              <option disabled>No categories available</option> 
-            )}
-          </select>
-        </div>
+      {/* Category Dropdown */}
+      <div className="space-y-2">
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+          Post Category
+        </label>
+        <select
+          id="category"
+          name="category"
+          value={post.category}
+          onChange={fieldChanged}
+          className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+        >
+          <option disabled value="">
+            -- Select category --
+          </option>
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <option value={category.categoryId} key={category.categoryId}>
+                {category.categoryTitle}
+              </option>
+            ))
+          ) : (
+            <option disabled>No categories available</option>
+          )}
+        </select>
+      </div>
 
-        <div className="text-center">
-          <button
-            type="submit"
-            className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-          >
-            Create Post
-          </button>
-          <button
-            type="button"
-            className="ml-4 px-6 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring focus:ring-red-300"
-            onClick={() =>
-              setPost({
-                title: "",
-                content: "",
-                category: "",
-              })
-            }
-          >
-            Reset Content
-          </button>
-        </div>
-      </form>
-    </div>
-  );
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row justify-center sm:justify-between gap-4 pt-4">
+        <button
+          type="submit"
+          className="w-full sm:w-auto px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+        >
+          Create Post
+        </button>
+        <button
+          type="button"
+          className="w-full sm:w-auto px-6 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring focus:ring-red-300"
+          onClick={() =>
+            setPost({
+              title: "",
+              content: "",
+              category: "",
+            })
+          }
+        >
+          Reset Content
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
 };
 
 export default AddPost;

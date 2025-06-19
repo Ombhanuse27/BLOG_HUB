@@ -179,96 +179,106 @@ function HomePage() {
     });
   };
 
-  return (
-    <div className="w-full">
-      <div className='h-16 px-5 bg-slate-400 flex items-center justify-between'>
-        <div className='flex gap-10 '>
-          <img src={logo} alt="Logo" className="w-27 h-8" />
-          <div className="w-50 h-10 p-2 -ml-5 bg-white border rounded-2xl flex">
-            <img src={search} alt="Search" className="w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-40 h-7 ml-2 bg-transparent outline-none"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} // Update search query
-              onKeyDown={handleSearch} // Handle Enter key press
-            />
-          </div>
-        </div>
-        <div className='flex gap-2'>
-          <Link to="/addpost">
-            <img src={write} alt="Write" className="w-7 h-8 cursor-pointer" />
-          </Link>
-          <h4 className="text-black cursor-pointer ml-2 m-2">Write</h4>
+return (
+  <div className="w-full min-h-screen">
+    {/* Top Navbar */}
+    <div className='h-auto px-3 sm:px-5 py-2 bg-slate-400 flex flex-wrap items-center justify-between gap-2'>
+      <div className='flex items-center gap-4 sm:gap-10 w-full sm:w-auto'>
+        <img src={logo} alt="Logo" className="w-24 h-8 object-contain" />
+        <div className="w-full sm:w-64 md:w-80 h-10 px-2 bg-white border rounded-2xl flex items-center">
+          <img src={search} alt="Search" className="w-4 h-4 sm:w-5 sm:h-5" />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full text-sm sm:text-base ml-2 bg-transparent outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
+          />
         </div>
       </div>
+      <div className='flex items-center gap-2 ml-2 sm:ml-0'>
+        <Link to="/addpost">
+          <img src={write} alt="Write" className="w-6 sm:w-7 h-6 sm:h-8 cursor-pointer" />
+        </Link>
+        <h4 className="text-black text-sm sm:text-base cursor-pointer">Write</h4>
+      </div>
+    </div>
 
-      <nav className="flex space-x-4 bg-gray-200 p-4">
-        <span
-          onClick={() => setSelectedCategory("For You")}
-          className={`p-2 cursor-pointer ${
-            selectedCategory === "For You" ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
-          }`}
-        >
-          For You
-        </span>
-        {followedTopics.length ? (
-          followedTopics.map((topic) => (
-            <span
-              key={topic}
-              onClick={() => setSelectedCategory(topic)}
-              className={`p-2 cursor-pointer ${
-                selectedCategory === topic ? 'bg-white-700 text-black border-b-2 border-slate-900' : 'bg-white-500 text-black'
-              }`}
-            >
-              {topic}
-            </span>
-          ))
-        ) : (
-          <span className="p-2 text-gray-600">No topics followed yet</span>
-        )}
-      </nav>
+    {/* Category Navbar */}
+    <nav className="flex flex-wrap gap-2 bg-gray-200 p-2 sm:p-4 text-sm sm:text-base overflow-x-auto">
+      <span
+        onClick={() => setSelectedCategory("For You")}
+        className={`p-2 cursor-pointer rounded ${
+          selectedCategory === "For You"
+            ? ' text-black border-b-2 border-slate-900'
+            : ' text-black'
+        }`}
+      >
+        For You
+      </span>
+      {followedTopics.length ? (
+        followedTopics.map((topic) => (
+          <span
+            key={topic}
+            onClick={() => setSelectedCategory(topic)}
+            className={`p-2 cursor-pointer rounded ${
+              selectedCategory === topic
+                ? ' text-black border-b-2 border-slate-900'
+                : ' text-black'
+            }`}
+          >
+            {topic}
+          </span>
+        ))
+      ) : (
+        <span className="p-2 text-gray-600">No topics followed yet</span>
+      )}
+    </nav>
 
-      {selectedContent && <div className="p-4 bg-gray-100 text-lg">{selectedContent}</div>}
+    {/* Info Message */}
+    {selectedContent && <div className="p-4 bg-gray-100 text-sm sm:text-lg">{selectedContent}</div>}
 
-      <div className="p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
-        {filteredPosts.length ? (
-          filteredPosts.map((post) => (
-            <Link to={`/post/${post.id}`} key={post.id}>
-              <div className="mb-4 p-4 bg-white shadow-md rounded flex justify-between items-start post-summary">
-                <div className="flex items-start">
-                  <img src={post.userIconUrl || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
-                  <div>
-                    <p className="font-bold">{post.user || "Unknown User"}</p>
-                    <h3 className="text-xl font-bold mt-4">{post.title}</h3>
-                    <div className="flex items-center text-gray-500 mt-5">
-                      <span>{formatDate(post.timestamp)}</span>
-                      <div className="flex items-center ml-4">
-                        <img src={like} alt="Likes" className="w-6 h-6 mr-2" />
-                        <span>{post.likesCount}</span>
-                        <img src={comment} alt="Comments" className="w-10 h-8 ml-4 mr-2" />
-                        <span>{post.commentsCount}</span>
-                      </div>
+    {/* Post Cards */}
+    <div className="p-4 sm:p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
+      {filteredPosts.length ? (
+        filteredPosts.map((post) => (
+          <Link to={`/post/${post.id}`} key={post.id}>
+            <div className="mb-4 p-4 bg-white shadow-md rounded flex flex-col md:flex-row justify-between items-start gap-4">
+              <div className="flex items-start">
+                <img src={post.userIconUrl || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
+                <div>
+                  <p className="font-bold text-sm sm:text-base">{post.user || "Unknown User"}</p>
+                  <h3 className="text-base sm:text-xl font-bold mt-2">{post.title}</h3>
+                  <div className="flex items-center text-gray-500 mt-4 text-xs sm:text-sm">
+                    <span>{formatDate(post.timestamp)}</span>
+                    <div className="flex items-center ml-4">
+                      <img src={like} alt="Likes" className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span>{post.likesCount}</span>
+                      <img src={comment} alt="Comments" className="w-5 h-5 sm:w-6 sm:h-6 ml-4 mr-1 sm:mr-2" />
+                      <span>{post.commentsCount}</span>
                     </div>
                   </div>
                 </div>
-                <div>
-                  <img
-                    src={post.bannerUrl}
-                    alt={post.title}
-                    className="w-64 h-32 object-cover rounded"
-                  />
-                </div>
               </div>
-            </Link>
-          ))
-        ) : (
-          <p className="text-gray-600">No posts available for the selected category</p>
-        )}
-      </div>
+              <div>
+                <img
+                  src={post.bannerUrl}
+                  alt={post.title}
+                  className="w-full md:w-64 h-32 object-cover rounded"
+                />
+              </div>
+            </div>
+          </Link>
+        ))
+      ) : (
+        <p className="text-gray-600 text-sm sm:text-base">No posts available for the selected category</p>
+      )}
     </div>
-  );
+  </div>
+);
+
+
 }
 
 function DropdownItem({ img, text, isLogout, handleLogout }) {

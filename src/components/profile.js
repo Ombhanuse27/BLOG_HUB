@@ -220,210 +220,221 @@ function Profile() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-100 py-6 px-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
-        {userDetails ? (
-          <>
-            <div className="flex flex-col items-center">
-              <img
-                src={userDetails.photo || userIcon}
-                className="w-24 h-24 rounded-full object-cover border-4 border-gray-300 shadow"
-                alt="Profile"
-              />
-              <h3 className="mt-4 text-xl font-semibold">
-                Welcome {userDetails.firstName} 🙏
-              </h3>
-              <p className="text-gray-600 mt-1">Email: {userDetails.email}</p>
+  <div className="w-full min-h-screen bg-gray-100 py-6 px-4">
+    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6">
+      {userDetails ? (
+        <>
+          {/* Profile Header */}
+          <div className="flex flex-col items-center text-center">
+            <img
+              src={userDetails.photo || userIcon}
+              className="w-24 h-24 rounded-full object-cover border-4 border-gray-300 shadow"
+              alt="Profile"
+            />
+            <h3 className="mt-4 text-lg sm:text-xl font-semibold">
+              Welcome {userDetails.firstName} 🙏
+            </h3>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              Email: {userDetails.email}
+            </p>
+            <button
+              className="mt-3 text-blue-600 hover:underline text-sm"
+              onClick={() => setShowEditProfile(true)}
+            >
+              Edit Profile
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex justify-center flex-wrap gap-2 sm:space-x-4 mt-6 border-b pb-2">
+            {["Saved Posts", "About"].map((section) => (
               <button
-                className="mt-3 text-blue-600 hover:underline"
-                onClick={() => setShowEditProfile(true)}
+                key={section}
+                onClick={() => setSelectedSection(section)}
+                className={`px-4 py-2 font-medium text-sm sm:text-base ${
+                  selectedSection === section
+                    ? "border-b-4 border-blue-600 text-blue-600"
+                    : "text-gray-500 hover:text-blue-600"
+                }`}
               >
-                Edit Profile
+                {section}
               </button>
-            </div>
+            ))}
+          </div>
 
-            {/* Tabs */}
-            <div className="flex justify-center space-x-4 mt-6 border-b pb-2">
-              {["Saved Posts", "About"].map((section) => (
-                <button
-                  key={section}
-                  onClick={() => setSelectedSection(section)}
-                  className={`px-4 py-2 font-medium ${
-                    selectedSection === section
-                      ? "border-b-4 border-blue-600 text-blue-600"
-                      : "text-gray-500 hover:text-blue-600"
-                  }`}
-                >
-                  {section}
-                </button>
-              ))}
-            </div>
-
-            {showEditProfile && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                <div className="bg-white p-6 rounded-xl w-96">
-                  <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
-                  {/* Photo input */}
+          {/* Edit Profile Modal */}
+          {showEditProfile && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-2">
+              <div className="bg-white p-4 sm:p-6 rounded-xl w-full max-w-md">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">
+                  Edit Profile
+                </h2>
+                {/* Photo input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setEditData((prev) => ({
+                      ...prev,
+                      photo: e.target.files[0],
+                    }))
+                  }
+                  className="mb-2"
+                />
+                {/* Input fields */}
+                {[
+                  "name",
+                  "address",
+                  "phone",
+                  "socialLink",
+                  "location",
+                  "dob",
+                ].map((field) => (
                   <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setEditData((prev) => ({
-                        ...prev,
-                        photo: e.target.files[0],
-                      }))
-                    }
-                    className="mb-2"
+                    key={field}
+                    name={field}
+                    placeholder={field[0].toUpperCase() + field.slice(1)}
+                    value={editData[field]}
+                    onChange={handleEditInputChange}
+                    className="w-full mb-2 p-2 border rounded text-sm"
                   />
-                  {/* Text fields */}
-                  {[
-                    "name",
-                    "address",
-                    "phone",
-                    "socialLink",
-                    "location",
-                    "dob",
-                  ].map((field) => (
-                    <input
-                      key={field}
-                      name={field}
-                      placeholder={field[0].toUpperCase() + field.slice(1)}
-                      value={editData[field]}
-                      onChange={handleEditInputChange}
-                      className="w-full mb-2 p-2 border rounded"
-                    />
-                  ))}
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <button
-                      onClick={() => setShowEditProfile(false)}
-                      className="px-4 py-2 bg-gray-300 rounded"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveProfile}
-                      className="px-4 py-2 bg-blue-600 text-white rounded"
-                    >
-                      Save
-                    </button>
-                  </div>
+                ))}
+                <div className="flex justify-end space-x-2 mt-4">
+                  <button
+                    onClick={() => setShowEditProfile(false)}
+                    className="px-4 py-2 bg-gray-300 rounded text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                  >
+                    Save
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Content Sections */}
-            <div className="mt-6">
-              {selectedSection === "Saved Posts" ? (
-                <>
-                  <h2 className="text-2xl font-semibold mb-4">
-                    Your Saved Posts
-                  </h2>
-                  {savedPosts.length > 0 ? (
-                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                      {savedPosts.map((post) => (
-                        <Link to={`/post/${post.id}`} key={post.id}>
-                          <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition flex">
-                            {/* Left: Post Content */}
-                            <div className="flex-1 pr-4">
-                              <div className="flex items-start space-x-4">
-                                <img
-                                  src={post.userIcon || userIcon}
-                                  alt="User"
-                                  className="w-10 h-10 rounded-full"
-                                />
-                                <div className="flex-1">
-                                  <p className="text-sm font-semibold text-gray-800">
-                                    {post.user || "Unknown"}
-                                  </p>
-                                  <h3 className="text-lg font-bold mt-1">
-                                    {post.title || "No Title"}
-                                  </h3>
-                                  <div className="flex items-center text-sm text-gray-500 mt-2">
-                                    <span>{formatDate(post.timestamp)}</span>
-                                    <div className="flex items-center ml-4 space-x-2">
-                                      <img
-                                        src={like}
-                                        alt="Likes"
-                                        className="w-5 h-5"
-                                      />
-                                      <span>{post.likesCount}</span>
-                                      <img
-                                        src={comment}
-                                        alt="Comments"
-                                        className="w-6 h-6 ml-4"
-                                      />
-                                      <span>{post.commentsCount}</span>
-                                    </div>
+          {/* Main Content */}
+          <div className="mt-6">
+            {selectedSection === "Saved Posts" ? (
+              <>
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+                  Your Saved Posts
+                </h2>
+                {savedPosts.length > 0 ? (
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                    {savedPosts.map((post) => (
+                      <Link to={`/post/${post.id}`} key={post.id}>
+                        <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition flex flex-col sm:flex-row">
+                          {/* Left: Content */}
+                          <div className="flex-1 sm:pr-4">
+                            <div className="flex items-start gap-4">
+                              <img
+                                src={post.userIcon || userIcon}
+                                alt="User"
+                                className="w-10 h-10 rounded-full"
+                              />
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-gray-800">
+                                  {post.user || "Unknown"}
+                                </p>
+                                <h3 className="text-base sm:text-lg font-bold mt-1">
+                                  {post.title || "No Title"}
+                                </h3>
+                                <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-2 flex-wrap gap-2">
+                                  <span>{formatDate(post.timestamp)}</span>
+                                  <div className="flex items-center gap-2 ml-0 sm:ml-4">
+                                    <img
+                                      src={like}
+                                      alt="Likes"
+                                      className="w-4 h-4 sm:w-5 sm:h-5"
+                                    />
+                                    <span>{post.likesCount}</span>
+                                    <img
+                                      src={comment}
+                                      alt="Comments"
+                                      className="w-5 h-5 sm:w-6 sm:h-6 ml-2"
+                                    />
+                                    <span>{post.commentsCount}</span>
                                   </div>
                                 </div>
                               </div>
                             </div>
+                          </div>
 
-                            {/* Right: Banner Image */}
+                          {/* Right: Banner Image */}
+                          <div className="mt-3 sm:mt-0 sm:ml-2">
                             <img
                               src={
                                 post.bannerUrl ||
                                 "https://via.placeholder.com/150"
                               }
                               alt={post.title || "Post"}
-                              className="w-32 h-24 object-cover rounded"
+                              className="w-full sm:w-32 h-24 object-cover rounded"
                             />
                           </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500">
-                      You haven’t saved any posts yet.
-                    </p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <h2 className="text-2xl font-semibold mb-4">About</h2>
-                  <div className="space-y-2 text-gray-700">
-                    <p>
-                      <span className="font-medium">Name:</span>{" "}
-                      {userDetails.name || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Address:</span>{" "}
-                      {userDetails.address || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Phone:</span>{" "}
-                      {userDetails.phone || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Social Link:</span>{" "}
-                      <a
-                        href={userDetails.socialLink}
-                        className="text-blue-500 hover:underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {userDetails.socialLink || "N/A"}
-                      </a>
-                    </p>
-                    <p>
-                      <span className="font-medium">Location:</span>{" "}
-                      {userDetails.location || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Date of Birth:</span>{" "}
-                      {userDetails.dob || "N/A"}
-                    </p>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                </>
-              )}
-            </div>
-          </>
-        ) : (
-          <p className="text-center">Loading profile...</p>
-        )}
-      </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">
+                    You haven’t saved any posts yet.
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+                  About
+                </h2>
+                <div className="space-y-2 text-gray-700 text-sm sm:text-base">
+                  <p>
+                    <span className="font-medium">Name:</span>{" "}
+                    {userDetails.name || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Address:</span>{" "}
+                    {userDetails.address || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Phone:</span>{" "}
+                    {userDetails.phone || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Social Link:</span>{" "}
+                    <a
+                      href={userDetails.socialLink}
+                      className="text-blue-500 hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {userDetails.socialLink || "N/A"}
+                    </a>
+                  </p>
+                  <p>
+                    <span className="font-medium">Location:</span>{" "}
+                    {userDetails.location || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Date of Birth:</span>{" "}
+                    {userDetails.dob || "N/A"}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      ) : (
+        <p className="text-center">Loading profile...</p>
+      )}
     </div>
-  );
+  </div>
+);
+
 }
 
 export default Profile;

@@ -156,7 +156,7 @@ const LandingPage = () => {
             world. We offer insightful tips, exciting categories, and more to
             help you on your blogging journey.
           </p>
-          <button>Explore More</button>
+          <button onClick={handleClk}>Explore More</button>
         </div>
       </div>
 
@@ -192,7 +192,7 @@ const LandingPage = () => {
             world. We offer insightful tips, exciting categories, and more to
             help you on your blogging journey.
           </p>
-          <button>Explore More</button>
+          <button onClick={handleClk}>Explore More</button>
         </div>
       </div>
 

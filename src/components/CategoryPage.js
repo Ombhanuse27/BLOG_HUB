@@ -92,39 +92,44 @@ function CategoryPage() {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-center text-2xl font-bold mb-6">Topics to Follow</h2>
-      <ul className="space-y-4">
-        {categories.map((category, index) => (
-          <li key={category.name} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <img src={category.icon} alt={category.name} className="w-8 h-8 mr-4" />
-              <span className="text-lg font-medium">{category.name}</span>
-            </div>
-            <button
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                category.followed
-                  ? "bg-gray-500 text-white hover:bg-gray-600"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
-              onClick={() => toggleFollow(index)}
-            >
-              {category.followed ? "Following" : "Follow"}
-            </button>
-          </li>
-        ))}
-      </ul>
+  <div className="px-4 py-6 max-w-md w-full mx-auto sm:px-6 md:px-8">
+    <h2 className="text-center text-xl sm:text-2xl font-bold mb-6">Topics to Follow</h2>
 
-      <div className="mt-8 text-center">
-        <button 
-          className="px-6 py-2 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
-          onClick={handleContinue}
+    <ul className="space-y-4">
+      {categories.map((category, index) => (
+        <li
+          key={category.name}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
         >
-          Continue to HomePage
-        </button>
-      </div>
+          <div className="flex items-center mb-3 sm:mb-0">
+            <img src={category.icon} alt={category.name} className="w-8 h-8 mr-3 sm:mr-4" />
+            <span className="text-base sm:text-lg font-medium">{category.name}</span>
+          </div>
+          <button
+            className={`w-full sm:w-auto px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+              category.followed
+                ? "bg-gray-500 text-white hover:bg-gray-600"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+            onClick={() => toggleFollow(index)}
+          >
+            {category.followed ? "Following" : "Follow"}
+          </button>
+        </li>
+      ))}
+    </ul>
+
+    <div className="mt-8 text-center">
+      <button 
+        className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
+        onClick={handleContinue}
+      >
+        Continue to HomePage
+      </button>
     </div>
-  );
+  </div>
+);
+
 }
 
 export default CategoryPage;

@@ -84,7 +84,21 @@ body {
     border-radius: 5px;
 }
 
+.left-content3 button {
+    background-color: #4CAF50;
+    color: white;
+    margin-top: 10px;
+    padding: 15px 30px;
+    border: none;
+    font-size: 1.1em;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
 .left-content button:hover {
+    background-color: #45a049;
+}
+.left-content3 button:hover{
     background-color: #45a049;
 }
 
@@ -139,9 +153,163 @@ body {
 }
 
 .left-content3 {
+    margin: 20px;
     text-align: center; /* Center align text */
     max-width: 800px; /* Set max width for content */
 }
+
+.left-content3 {
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease-in-out;
+}
+
+.left-content3 h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    line-height: 1.3;
+}
+
+.left-content3 p {
+    font-size: 1.1em;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.left-content3 h2 {
+    font-size: 1.8em;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #4CAF50;
+}
+
+.left-content3 .extra-text {
+    font-size: 1.05em;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.left-content3 .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.left-content3 .chef-video {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.left-content3 .chef-video:hover {
+    transform: scale(1.05);
+}
+
+.left-content3 button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 28px;
+    border: none;
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.left-content3 button:hover {
+    background-color: #388e3c;
+}
+
+
+.left-content {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.left-content h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    line-height: 1.3;
+}
+
+.left-content p {
+    font-size: 1.1em;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.left-content h2 {
+    font-size: 1.8em;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #4CAF50;
+}
+
+.left-content .extra-text {
+    font-size: 1.05em;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.left-content .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.left-content .chef-video {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.left-content .chef-video:hover {
+    transform: scale(1.05);
+}
+
+.left-content button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 28px;
+    border: none;
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.left-content button:hover {
+    background-color: #388e3c;
+}
+
 
 .image-container img.active {
     opacity: 1;
@@ -217,4 +385,89 @@ body {
 .footer-bottom {
     margin-top: 20px;
     font-size: 0.9em;
+}
+/* ========== RESPONSIVE ONLY ADDITIONS ========== */
+
+/* Tablets and smaller laptops */
+@media (max-width: 1024px) {
+  .navbar {
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .navbar ul {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .landing {
+    flex-direction: column;
+    padding: 30px;
+  }
+
+  .left-content,
+  .image-container {
+    width: 100%;
+    height: auto;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .gallery {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chef-video {
+    width: 100%;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-section {
+    min-width: 100%;
+    margin: 20px 0;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 600px) {
+  .left-content h1 {
+    font-size: 2em;
+    text-align: center;
+  }
+
+  .left-content h2 {
+    font-size: 1.5em;
+    text-align: center;
+  }
+
+  .left-content p,
+  .left-content .extra-text {
+    font-size: 1em;
+    text-align: center;
+  }
+
+  .left-content button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+  }
+
+  .image-container3 {
+    height: auto;
+  }
+
+  .social-icons {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
 }
