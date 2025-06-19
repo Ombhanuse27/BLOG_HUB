@@ -221,7 +221,7 @@ function Profile() {
 
   return (
   <div className="w-full min-h-screen bg-gray-100 py-6 px-4">
-    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6">
+    <div className="max-w-4xl  mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
       {userDetails ? (
         <>
           {/* Profile Header */}
