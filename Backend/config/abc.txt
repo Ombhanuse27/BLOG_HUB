@@ -1,0 +1,2040 @@
+register.js:
+import React, { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
+import { auth, db } from "./firebase"; // Ensure correct import
+import { toast } from "react-toastify"; // Import toast for notifications
+
+function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fname, setFname] = useState("");
+  const [lname, setLname] = useState("");
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Define default categories to be stored in Firestore
+      const defaultCategories = [
+        "Data Science",
+        "Self Improvement",
+        "Technology",
+        "Writing",
+        "Relationships"
+      ];
+
+      // Create user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        firstName: fname,
+        lastName: lname,
+        followedTopics: [], // Initially no topics followed
+        categories: defaultCategories // Add categories field
+      });
+
+      console.log("User Registered Successfully!!");
+      toast.success("User Registered Successfully!!", {
+        position: "top-center",
+      });
+    } catch (error) {
+      console.error(error.message);
+      toast.error(error.message, {
+        position: "bottom-center",
+      });
+    }
+  };
+
+  return (
+    <form onSubmit={handleRegister} className="space-y-6">
+      <h3 className="text-center text-xl font-semibold">Sign Up</h3>
+
+      <div className="mb-3">
+        <label className="block mb-1 font-semibold">First name</label>
+        <input
+          type="text"
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="First name"
+          onChange={(e) => setFname(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="block mb-1 font-semibold">Last name</label>
+        <input
+          type="text"
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Last name"
+          onChange={(e) => setLname(e.target.value)}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="block mb-1 font-semibold">Email address</label>
+        <input
+          type="email"
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter email"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="block mb-1 font-semibold">Password</label>
+        <input
+          type="password"
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter password"
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="mt-6">
+        <button type="submit" className="w-full p-2 text-white bg-blue-600 rounded hover:bg-blue-700">
+          Sign Up
+        </button>
+      </div>
+
+      <p className="text-right text-sm mt-2">
+        Already registered? <a href="/SignIn" className="text-blue-500 hover:underline">Sign In</a>
+      </p>
+    </form>
+  );
+}
+
+export default Register;
+
+
+signin.js:
+
+import { signInWithEmailAndPassword } from "firebase/auth";
+import React, { useState } from "react";
+import { auth } from "./firebase";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { getFirestore, doc, getDoc } from "firebase/firestore"; // Import Firestore functions
+import "react-toastify/dist/ReactToastify.css";
+import SignInwithGoogle from "./signInWIthGoogle";
+
+function SignIn() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const db = getFirestore(); // Initialize Firestore
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Check if the user has followed topics in Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists() && userDocSnap.data().followedTopics?.length > 0) {
+        // Redirect to homepage if user has followed topics
+        navigate("/HomePage");
+      } else {
+        // Redirect to category page if no followed topics found
+        navigate("/CategoryPage");
+      }
+
+      toast.success("User logged in Successfully", {
+        position: "top-center",
+      });
+    } catch (error) {
+      console.log(error.message);
+      toast.error(error.message, {
+        position: "bottom-center",
+      });
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h3 className="text-center text-xl font-semibold">Login</h3>
+
+      <div className="mb-3">
+        <label className="block mb-1 font-semibold">Email address</label>
+        <input
+          type="email"
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="block mb-1 font-semibold">Password</label>
+        <input
+          type="password"
+          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+
+      <div className="mt-6">
+        <button type="submit" className="w-full p-2 text-white bg-blue-600 rounded hover:bg-blue-700">
+          Submit
+        </button>
+      </div>
+
+      <p className="text-right text-sm mt-2">
+        New user? <a href="/register" className="text-blue-500 hover:underline">Register Here</a>
+      </p>
+      <SignInwithGoogle />
+    </form>
+  );
+}
+
+export default SignIn;
+
+HomePage.js:
+
+import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import userIcon from '../img/user.png';
+import edit from '../img/edit.png';
+import logo from '../img/letsblog.png';
+import search from '../img/search.png';
+import logout from '../img/log-out.png';
+import { auth, rtdb, db } from './firebase';
+import { getDoc, doc } from "firebase/firestore";
+import { ref, onValue } from "firebase/database";
+import like from '../img/like.png';
+import comment from '../img/comment.png';
+import write from '../img/write.png';
+
+function HomePage() {
+  const [open, setOpen] = useState(false);
+  const [followedTopics, setFollowedTopics] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("For You");
+  const [posts, setPosts] = useState([]);
+  const [selectedContent, setSelectedContent] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  let menuRef = useRef(null);
+
+  useEffect(() => {
+    const fetchFollowedTopics = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userId = currentUser.uid;
+        const userDocRef = doc(db, users/${userId});
+
+        try {
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            const topics = data.followedTopics || [];
+            setFollowedTopics(topics);
+          } else {
+            setFollowedTopics([]);
+          }
+        } catch (error) {
+          console.error("Error fetching followed topics:", error);
+        }
+      } else {
+        console.log("User is not logged in.");
+      }
+    };
+
+    fetchFollowedTopics();
+  }, []);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const postsRef = ref(rtdb, 'posts');
+      onValue(postsRef, async (snapshot) => {
+        const allPosts = snapshot.val();
+        let categoryPosts = [];
+  
+        if (allPosts) {
+          for (let key in allPosts) {
+            const postCategory = allPosts[key].category?.categoryTitle;
+            const userId = allPosts[key].userId;
+  
+            // Fetch user document
+            const userDocRef = doc(db, users/${userId});
+            const userDoc = await getDoc(userDocRef);
+  
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              const userIconUrl = userData.photo || userIcon;
+  
+              if (
+                (selectedCategory === "For You" &&
+                  followedTopics.includes(postCategory)) ||
+                postCategory === selectedCategory
+              ) {
+                const likesCount = allPosts[key].likes
+                  ? Object.keys(allPosts[key].likes).length
+                  : 0;
+                const commentsCount = allPosts[key].comments
+                  ? Object.keys(allPosts[key].comments).length
+                  : 0;
+  
+                categoryPosts.push({
+                  id: key,
+                  userIconUrl,
+                  likesCount,
+                  commentsCount,
+                  ...allPosts[key],
+                });
+              }
+            } else {
+              console.warn(User document not found for userId: ${userId});
+            }
+          }
+        }
+  
+        // Sort posts by timestamp (newest first)
+        categoryPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+        setPosts(categoryPosts);
+        setFilteredPosts(categoryPosts); // Initialize filteredPosts with all posts
+        setSelectedContent(
+          selectedCategory === "For You"
+            ? "Displaying posts for your followed topics"
+            : Displaying content for category: ${selectedCategory}
+        );
+      }, (error) => {
+        console.error("Error fetching posts:", error);
+      });
+    };
+  
+    if (selectedCategory) {
+      fetchPosts();
+    } else {
+      setPosts([]);
+      setFilteredPosts([]); // Reset filteredPosts to an empty array
+      setSelectedContent("");
+    }
+  }, [selectedCategory, followedTopics]);
+  const handleSearch = (e) => {
+    if (e.key === "Enter") {
+      if (searchQuery) {
+        if (posts.length > 0) {
+          const filtered = posts.filter(
+            (post) =>
+              post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              post.user.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+          setFilteredPosts(filtered);
+          setSelectedContent(
+            filtered.length
+              ? Displaying results for: ${searchQuery}
+              : No posts available for: ${searchQuery}
+          );
+        } else {
+          // Handle the case when posts are not available
+          setFilteredPosts([]);
+          setSelectedContent("No posts available yet.");
+        }
+      } else {
+        setFilteredPosts(posts);
+        setSelectedContent(
+          selectedCategory === "For You"
+            ? "Displaying posts for your followed topics"
+            : Displaying content for category: ${selectedCategory}
+        );
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+    };
+  }, []);
+
+  async function handleLogout() {
+    try {
+      await auth.signOut();
+      window.location.href = "/SignIn";
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    }
+  }
+
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
+
+return (
+  <div className="w-full min-h-screen">
+    {/* Top Navbar */}
+    <div className='h-auto px-3 sm:px-5 py-2 bg-slate-400 flex flex-wrap items-center justify-between gap-2'>
+      <div className='flex items-center gap-4 sm:gap-10 w-full sm:w-auto'>
+        <img src={logo} alt="Logo" className="w-24 h-8 object-contain" />
+        <div className="w-full sm:w-64 md:w-80 h-10 px-2 bg-white border rounded-2xl flex items-center">
+          <img src={search} alt="Search" className="w-4 h-4 sm:w-5 sm:h-5" />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full text-sm sm:text-base ml-2 bg-transparent outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
+          />
+        </div>
+      </div>
+      <div className='flex items-center gap-2 ml-2 sm:ml-0'>
+        <Link to="/addpost">
+          <img src={write} alt="Write" className="w-6 sm:w-7 h-6 sm:h-8 cursor-pointer" />
+        </Link>
+        <h4 className="text-black text-sm sm:text-base cursor-pointer">Write</h4>
+      </div>
+    </div>
+
+    {/* Category Navbar */}
+    <nav className="flex flex-wrap gap-2 bg-gray-200 p-2 sm:p-4 text-sm sm:text-base overflow-x-auto">
+      <span
+        onClick={() => setSelectedCategory("For You")}
+        className={p-2 cursor-pointer rounded ${
+          selectedCategory === "For You"
+            ? ' text-black border-b-2 border-slate-900'
+            : ' text-black'
+        }}
+      >
+        For You
+      </span>
+      {followedTopics.length ? (
+        followedTopics.map((topic) => (
+          <span
+            key={topic}
+            onClick={() => setSelectedCategory(topic)}
+            className={p-2 cursor-pointer rounded ${
+              selectedCategory === topic
+                ? ' text-black border-b-2 border-slate-900'
+                : ' text-black'
+            }}
+          >
+            {topic}
+          </span>
+        ))
+      ) : (
+        <span className="p-2 text-gray-600">No topics followed yet</span>
+      )}
+    </nav>
+
+    {/* Info Message */}
+    {selectedContent && <div className="p-4 bg-gray-100 text-sm sm:text-lg">{selectedContent}</div>}
+
+    {/* Post Cards */}
+    <div className="p-4 sm:p-6 bg-gray-100 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
+      {filteredPosts.length ? (
+        filteredPosts.map((post) => (
+          <Link to={/post/${post.id}} key={post.id}>
+            <div className="mb-4 p-4 bg-white shadow-md rounded flex flex-col md:flex-row justify-between items-start gap-4">
+              <div className="flex items-start">
+                <img src={post.userIconUrl || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
+                <div>
+                  <p className="font-bold text-sm sm:text-base">{post.user || "Unknown User"}</p>
+                  <h3 className="text-base sm:text-xl font-bold mt-2">{post.title}</h3>
+                  <div className="flex items-center text-gray-500 mt-4 text-xs sm:text-sm">
+                    <span>{formatDate(post.timestamp)}</span>
+                    <div className="flex items-center ml-4">
+                      <img src={like} alt="Likes" className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span>{post.likesCount}</span>
+                      <img src={comment} alt="Comments" className="w-5 h-5 sm:w-6 sm:h-6 ml-4 mr-1 sm:mr-2" />
+                      <span>{post.commentsCount}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <img
+                  src={post.bannerUrl}
+                  alt={post.title}
+                  className="w-full md:w-64 h-32 object-cover rounded"
+                />
+              </div>
+            </div>
+          </Link>
+        ))
+      ) : (
+        <p className="text-gray-600 text-sm sm:text-base">No posts available for the selected category</p>
+      )}
+    </div>
+  </div>
+);
+
+
+}
+
+function DropdownItem({ img, text, isLogout, handleLogout }) {
+  return (
+    <li className='dropdownItem'>
+      <img src={img} alt={text} />
+      {isLogout ? (
+        <button onClick={handleLogout}>{text}</button>
+      ) : (
+        <button>{text}</button>
+      )}
+    </li>
+  );
+}
+
+export default HomePage;
+
+
+profile.js:
+
+import React, { useEffect, useState } from "react";
+import { auth, db } from "./firebase";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { Link } from "react-router-dom";
+import userIcon from "../img/user.png";
+import { storage } from "./firebase";
+import like from "../img/like.png";
+import comment from "../img/comment.png";
+import { rtdb } from "./firebase";
+import { onValue, ref } from "firebase/database";
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
+
+function Profile() {
+  const [userDetails, setUserDetails] = useState(null);
+  const [selectedSection, setSelectedSection] = useState("Saved Posts");
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editData, setEditData] = useState({
+    photo: "",
+    name: "",
+    address: "",
+    phone: "",
+    socialLink: "",
+    location: "",
+    dob: "",
+  });
+
+  // Fetch user data from Firestore
+  const fetchUserData = async () => {
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUserDetails(docSnap.data());
+          setEditData(docSnap.data()); // Pre-fill editData with existing data
+        } else {
+          console.log("User not found.");
+        }
+      }
+    });
+  };
+
+  // Fetch saved posts from Firestore and Realtime Database
+  const fetchSavedPosts = async () => {
+    const currentUser = auth.currentUser;
+    console.log("Current User:", currentUser); // Debugging
+
+    if (currentUser) {
+      try {
+        // Fetch saved posts from Firestore
+        const savedPostsRef = collection(
+          db,
+          users/${currentUser.uid}/savedPosts
+        );
+        const snapshot = await getDocs(savedPostsRef);
+        console.log("Snapshot docs:", snapshot.docs); // Debugging
+
+        const posts = [];
+        const promises = [];
+
+        snapshot.docs.forEach((docSnap) => {
+          const fetchPostDetails = async () => {
+            const postData = docSnap.data();
+            const postId = docSnap.id;
+            console.log("Post Data:", postData); // Debugging
+
+            // Default values
+            let userIconUrl = userIcon; // Use the default user icon
+            let likesCount = 0;
+            let commentsCount = 0;
+
+            // Fetch user profile icon from Firestore
+            if (postData.userId) {
+              try {
+                const userDocRef = doc(db, users/${postData.userId});
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                  userIconUrl = userDocSnap.data()?.photo || userIconUrl;
+                }
+              } catch (error) {
+                console.error(
+                  Error fetching user profile for userId: ${postData.userId},
+                  error
+                );
+              }
+            }
+
+            // Fetch like and comment counts from Realtime Database
+            const postRef = ref(rtdb, posts/${postId});
+            const postSnapshotPromise = new Promise((resolve) => {
+              onValue(
+                postRef,
+                (snapshot) => {
+                  const postDetails = snapshot.val();
+                  likesCount = postDetails?.likes
+                    ? Object.keys(postDetails.likes).length
+                    : 0;
+                  commentsCount = postDetails?.comments
+                    ? Object.keys(postDetails.comments).length
+                    : 0;
+
+                  resolve({
+                    id: postId,
+                    userIcon: userIconUrl,
+                    likesCount,
+                    commentsCount,
+                    ...postData,
+                  });
+                },
+                (error) => {
+                  console.error(
+                    Error fetching Realtime Database data for postId: ${postId},
+                    error
+                  );
+                  resolve({
+                    id: postId,
+                    userIcon: userIconUrl,
+                    likesCount,
+                    commentsCount,
+                    ...postData,
+                  });
+                }
+              );
+            });
+
+            return postSnapshotPromise;
+          };
+
+          promises.push(fetchPostDetails());
+        });
+
+        // Wait for all promises to resolve
+        const results = await Promise.all(promises);
+        console.log("Saved Posts Results:", results); // Debugging
+        setSavedPosts(results); // Update the savedPosts state
+      } catch (error) {
+        console.error("Error fetching saved posts:", error);
+      }
+    }
+  };
+
+  // Fetch user data and saved posts on component mount
+  useEffect(() => {
+    fetchUserData();
+    fetchSavedPosts();
+  }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      window.location.href = "/SignIn";
+      console.log("User logged out successfully!");
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    }
+  };
+
+  // Handle input changes in the edit profile form
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Save profile changes
+  const handleSaveProfile = async () => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        let photoURL = userDetails.photo;
+
+        // Upload new photo if selected
+        if (editData.photo && editData.photo instanceof File) {
+          const fileRef = storageRef(storage, images/${user.uid}/${uuidv4()});
+          await uploadBytes(fileRef, editData.photo);
+          photoURL = await getDownloadURL(fileRef);
+        }
+
+        // Update user data in Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        await updateDoc(userDocRef, {
+          ...editData,
+          photo: photoURL,
+        });
+
+        // Update local state
+        setUserDetails({ ...userDetails, ...editData, photo: photoURL });
+        setShowEditProfile(false);
+        console.log("Profile updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error.message);
+    }
+  };
+
+  // Format timestamp to a readable date
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "No Date";
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  return (
+  <div className="w-full min-h-screen bg-gray-100 py-6 px-4">
+    <div className="max-w-4xl  mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
+      {userDetails ? (
+        <>
+          {/* Profile Header */}
+          <div className="flex flex-col items-center text-center">
+            <img
+              src={userDetails.photo || userIcon}
+              className="w-24 h-24 rounded-full object-cover border-4 border-gray-300 shadow"
+              alt="Profile"
+            />
+            <h3 className="mt-4 text-lg sm:text-xl font-semibold">
+              Welcome {userDetails.firstName} 🙏
+            </h3>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              Email: {userDetails.email}
+            </p>
+            <button
+              className="mt-3 text-blue-600 hover:underline text-sm"
+              onClick={() => setShowEditProfile(true)}
+            >
+              Edit Profile
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex justify-center flex-wrap gap-2 sm:space-x-4 mt-6 border-b pb-2">
+            {["Saved Posts", "About"].map((section) => (
+              <button
+                key={section}
+                onClick={() => setSelectedSection(section)}
+                className={px-4 py-2 font-medium text-sm sm:text-base ${
+                  selectedSection === section
+                    ? "border-b-4 border-blue-600 text-blue-600"
+                    : "text-gray-500 hover:text-blue-600"
+                }}
+              >
+                {section}
+              </button>
+            ))}
+          </div>
+
+          {/* Edit Profile Modal */}
+          {showEditProfile && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-2">
+              <div className="bg-white p-4 sm:p-6 rounded-xl w-full max-w-md">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">
+                  Edit Profile
+                </h2>
+                {/* Photo input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setEditData((prev) => ({
+                      ...prev,
+                      photo: e.target.files[0],
+                    }))
+                  }
+                  className="mb-2"
+                />
+                {/* Input fields */}
+                {[
+                  "name",
+                  "address",
+                  "phone",
+                  "socialLink",
+                  "location",
+                  "dob",
+                ].map((field) => (
+                  <input
+                    key={field}
+                    name={field}
+                    placeholder={field[0].toUpperCase() + field.slice(1)}
+                    value={editData[field]}
+                    onChange={handleEditInputChange}
+                    className="w-full mb-2 p-2 border rounded text-sm"
+                  />
+                ))}
+                <div className="flex justify-end space-x-2 mt-4">
+                  <button
+                    onClick={() => setShowEditProfile(false)}
+                    className="px-4 py-2 bg-gray-300 rounded text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Main Content */}
+          <div className="mt-6">
+            {selectedSection === "Saved Posts" ? (
+              <>
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+                  Your Saved Posts
+                </h2>
+                {savedPosts.length > 0 ? (
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                    {savedPosts.map((post) => (
+                      <Link to={/post/${post.id}} key={post.id}>
+                        <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition flex flex-col sm:flex-row">
+                          {/* Left: Content */}
+                          <div className="flex-1 sm:pr-4">
+                            <div className="flex items-start gap-4">
+                              <img
+                                src={post.userIcon || userIcon}
+                                alt="User"
+                                className="w-10 h-10 rounded-full"
+                              />
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-gray-800">
+                                  {post.user || "Unknown"}
+                                </p>
+                                <h3 className="text-base sm:text-lg font-bold mt-1">
+                                  {post.title || "No Title"}
+                                </h3>
+                                <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-2 flex-wrap gap-2">
+                                  <span>{formatDate(post.timestamp)}</span>
+                                  <div className="flex items-center gap-2 ml-0 sm:ml-4">
+                                    <img
+                                      src={like}
+                                      alt="Likes"
+                                      className="w-4 h-4 sm:w-5 sm:h-5"
+                                    />
+                                    <span>{post.likesCount}</span>
+                                    <img
+                                      src={comment}
+                                      alt="Comments"
+                                      className="w-5 h-5 sm:w-6 sm:h-6 ml-2"
+                                    />
+                                    <span>{post.commentsCount}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right: Banner Image */}
+                          <div className="mt-3 sm:mt-0 sm:ml-2">
+                            <img
+                              src={
+                                post.bannerUrl ||
+                                "https://via.placeholder.com/150"
+                              }
+                              alt={post.title || "Post"}
+                              className="w-full sm:w-32 h-24 object-cover rounded"
+                            />
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">
+                    You haven’t saved any posts yet.
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+                  About
+                </h2>
+                <div className="space-y-2 text-gray-700 text-sm sm:text-base">
+                  <p>
+                    <span className="font-medium">Name:</span>{" "}
+                    {userDetails.name || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Address:</span>{" "}
+                    {userDetails.address || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Phone:</span>{" "}
+                    {userDetails.phone || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Social Link:</span>{" "}
+                    <a
+                      href={userDetails.socialLink}
+                      className="text-blue-500 hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {userDetails.socialLink || "N/A"}
+                    </a>
+                  </p>
+                  <p>
+                    <span className="font-medium">Location:</span>{" "}
+                    {userDetails.location || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Date of Birth:</span>{" "}
+                    {userDetails.dob || "N/A"}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      ) : (
+        <p className="text-center">Loading profile...</p>
+      )}
+    </div>
+  </div>
+);
+
+}
+
+export default Profile;
+
+
+CategoryPage.js:
+
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { db, auth } from './firebase'; 
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
+
+
+// Import icons or images for categories
+import dataScienceIcon from 'img/ds.png'
+import pythonIcon from 'img/python.webp'
+import aiIcon from 'img/ai.webp'
+import softwareDevIcon from 'img/softwaredev.webp'
+import javascriptIcon from 'img/js.webp'
+import recipeIcon from 'img/recipe.webp'
+import machineLearningIcon from 'img/machinelearning.webp'
+import technologyIcon from 'img/tech.png'
+
+const topics = [
+  { name: "Data Science", icon: dataScienceIcon, followed: false },
+  { name: "Python", icon: pythonIcon, followed: false },
+  { name: "Artificial Intelligence", icon: aiIcon, followed: false },
+  { name: "Software Development", icon: softwareDevIcon, followed: false },
+  { name: "Javascript", icon: javascriptIcon, followed: false },
+  { name: "Recipe", icon: recipeIcon, followed: false },
+  { name: "Machine Learning", icon: machineLearningIcon, followed: false },
+  { name: "Technology", icon: technologyIcon, followed: false },
+];
+
+function CategoryPage() {
+  const [categories, setCategories] = useState(topics);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate(); 
+
+  useEffect(() => {
+    const fetchFollowedTopics = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        setUser(currentUser);
+        const userId = currentUser.uid;
+
+        try {
+          const userDocRef = doc(db, "users", userId);
+          const docSnapshot = await getDoc(userDocRef);
+          
+          if (docSnapshot.exists()) {
+            const followed = docSnapshot.data().followedTopics || [];
+            const updatedCategories = topics.map((category) => ({
+              ...category,
+              followed: followed.includes(category.name),
+            }));
+            setCategories(updatedCategories);
+          }
+        } catch (error) {
+          console.error("Error fetching followed topics:", error);
+        }
+      }
+    };
+
+    fetchFollowedTopics();
+  }, [user]);
+
+  const toggleFollow = async (index) => {
+    const updatedCategories = categories.map((category, i) =>
+      i === index ? { ...category, followed: !category.followed } : category
+    );
+    setCategories(updatedCategories);
+
+    if (user) {
+      const userId = user.uid;
+      const followedTopics = updatedCategories
+        .filter((category) => category.followed)
+        .map((category) => category.name);
+
+      try {
+        console.log("Followed Topics to Store:", followedTopics);
+
+        // Store the followed topics in Firestore under the user document
+        await setDoc(
+          doc(db, "users", userId),
+          { followedTopics },
+          { merge: true } // Merge the new followed topics with existing data
+        );
+
+        console.log("Followed topics updated successfully in Firestore");
+      } catch (error) {
+        console.error("Error updating followed topics:", error);
+      }
+    }
+  };
+
+  const handleContinue = () => {  
+    navigate("/homepage"); 
+  };
+
+  return (
+  <div className="px-4 py-6 max-w-md w-full mx-auto sm:px-6 md:px-8">
+    <h2 className="text-center text-xl sm:text-2xl font-bold mb-6">Topics to Follow</h2>
+
+    <ul className="space-y-4">
+      {categories.map((category, index) => (
+        <li
+          key={category.name}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+        >
+          <div className="flex items-center mb-3 sm:mb-0">
+            <img src={category.icon} alt={category.name} className="w-8 h-8 mr-3 sm:mr-4" />
+            <span className="text-base sm:text-lg font-medium">{category.name}</span>
+          </div>
+          <button
+            className={w-full sm:w-auto px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+              category.followed
+                ? "bg-gray-500 text-white hover:bg-gray-600"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }}
+            onClick={() => toggleFollow(index)}
+          >
+            {category.followed ? "Following" : "Follow"}
+          </button>
+        </li>
+      ))}
+    </ul>
+
+    <div className="mt-8 text-center">
+      <button 
+        className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
+        onClick={handleContinue}
+      >
+        Continue to HomePage
+      </button>
+    </div>
+  </div>
+);
+
+}
+
+export default CategoryPage;
+
+fetchCategory.js:
+
+import { db } from './firebase'; // Adjust the path if necessary
+import { collection, getDocs } from 'firebase/firestore';
+
+// Fetch categories from Firestore
+export const fetchCategories = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'categories')); // Replace 'categories' with your actual collection name
+    const categories = [];
+    querySnapshot.forEach((doc) => {
+      categories.push({ id: doc.id, ...doc.data() });
+    });
+    return categories;
+  } catch (error) {
+    console.error("Error fetching categories: ", error);
+    throw new Error('Failed to fetch categories');
+  }
+};
+
+AddPost.js:
+
+import { useState, useEffect, useRef } from "react";
+import JoditEditor from "jodit-react";
+import { toast } from "react-toastify";
+import { auth, db, rtdb } from './firebase'; // import Realtime Database
+import { doc, getDoc } from "firebase/firestore"; 
+import { ref as dbRef, set } from "firebase/database"; // For Realtime Database
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"; // For Firebase Storage
+
+const AddPost = () => {
+  const editor = useRef(null);
+  const [categories, setCategories] = useState([]);
+  const [user, setUser] = useState(null);  // User state
+  const [post, setPost] = useState({
+    title: "",
+    content: "",
+    category: "",
+  });
+  const [image, setImage] = useState(null);
+
+  // Define the getUserDetails function directly here
+  const getUserDetails = async () => {
+    return new Promise((resolve, reject) => {
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          try {
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              resolve(docSnap.data());
+            } else {
+              reject("User data not found.");
+            }
+          } catch (error) {
+            reject("Error fetching user data: " + error.message);
+          }
+        } else {
+          reject("User is not logged in.");
+        }
+      });
+    });
+  };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userDetails = await getUserDetails();  // Fetch user details
+        setUser(userDetails);  // Set user data
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        toast.error("Error fetching user details.");
+      }
+    };
+
+    fetchUser();
+
+    const fetchFollowedTopics = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userId = currentUser.uid;
+        const userDocRef = doc(db, "users", userId);
+        
+        try {
+          const docSnapshot = await getDoc(userDocRef);
+          if (docSnapshot.exists()) {
+            const followedTopics = docSnapshot.data().followedTopics || [];
+            const followedCategories = followedTopics.map((topic, index) => ({
+              categoryId: followed-${index}, // Use a dynamic category ID
+              categoryTitle: topic,
+            }));
+            setCategories(followedCategories);
+          } else {
+            console.log("No followed topics found for the user.");
+          }
+        } catch (error) {
+          console.error("Error fetching followed topics:", error);
+          toast.error("Error fetching followed topics.");
+        }
+      }
+    };
+
+    fetchFollowedTopics();
+  }, []);
+
+  const fieldChanged = (event) => {
+    setPost({ ...post, [event.target.name]: event.target.value });
+  };
+
+  const contentFieldChanged = (data) => {
+    setPost({ ...post, content: data });
+  };
+
+  const createPost = async (event) => {
+    event.preventDefault();
+  
+    if (post.title.trim() === "") {
+      toast.error("Post title is required!");
+      return;
+    }
+  
+    if (post.content.trim() === "") {
+      toast.error("Post content is required!");
+      return;
+    }
+  
+    if (post.category === "") {
+      toast.error("Select a category!");
+      return;
+    }
+  
+    // Generate a unique post ID using timestamp
+    const postId = post_${Date.now()};
+  
+    // Fetch the user's first name and last name from Firestore
+    let fullName = "unknown_user"; // Default value
+    try {
+      if (user) {
+        const firstName = user.firstName || "";
+        const lastName = user.lastName || "";
+        fullName = ${firstName} ${lastName}.trim(); // Combine first and last name
+      }
+    } catch (error) {
+      console.error("Error fetching full name:", error);
+      toast.error("Error fetching user name.");
+    }
+  
+    // Include a timestamp
+    const timestamp = new Date().toISOString();
+  
+    // Prepare the post object to store in Realtime Database
+    const newPost = {
+      title: post.title,
+      content: post.content,
+      category: {
+        categoryId: post.category,
+        categoryTitle: categories.find(cat => cat.categoryId === post.category)?.categoryTitle || "Unknown",
+      },
+      userId: auth.currentUser?.uid || 'unknown',  // Ensure we have userId
+      user: fullName,  // Correctly retrieved full name
+      timestamp: timestamp,
+    };
+  
+    try {
+      // If an image is selected, upload it to Firebase Storage
+      if (image) {
+        const storage = getStorage();
+        const bannerRef = storageRef(storage, banners/banner_${postId}_${Date.now()});
+  
+        // Upload the image
+        await uploadBytes(bannerRef, image);
+  
+        // Get the download URL of the uploaded image
+        const bannerUrl = await getDownloadURL(bannerRef);
+        newPost.bannerUrl = bannerUrl;
+      }
+  
+      // Save the post data to Firebase Realtime Database
+      const postRef = dbRef(rtdb, posts/${postId});
+      await set(postRef, newPost);
+  
+      toast.success("Post Created Successfully!");
+  
+      // Reset the form
+      setPost({
+        title: "",
+        content: "",
+        category: "",
+      });
+      setImage(null); // Reset the image
+  
+    } catch (error) {
+      toast.error("Post not created due to an error: " + error.message);
+      console.error("Error adding post:", error); // Log the error for debugging
+    }
+  };
+
+  const handleFileChange = (event) => {
+    setImage(event.target.files[0]);
+  };
+
+ return (
+  <div className="max-w-5xl w-full mx-auto my-8 p-4 sm:p-6 bg-white shadow-md rounded-lg flex flex-col">
+    <div className="p-4 sm:p-5 border-b mb-6 flex justify-center items-center">
+      <h3 className="text-lg sm:text-xl font-bold text-center text-gray-700">
+        What's going on in your mind?
+      </h3>
+    </div>
+
+    <form onSubmit={createPost} className="space-y-6 w-full">
+      {/* Post Title */}
+      <div className="space-y-2">
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          Post Title
+        </label>
+        <input
+          type="text"
+          id="title"
+          placeholder="Enter your post title here"
+          name="title"
+          value={post.title}
+          onChange={fieldChanged}
+          className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+        />
+      </div>
+
+      {/* Post Content */}
+      <div className="space-y-2">
+        <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+          Post Content
+        </label>
+        <div className="block w-full">
+          <JoditEditor
+            ref={editor}
+            value={post.content}
+            onChange={contentFieldChanged}
+            className="rounded-lg"
+          />
+        </div>
+      </div>
+
+      {/* Banner Image */}
+      <div className="space-y-2">
+        <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+          Select Post Banner
+        </label>
+        <input
+          id="image"
+          type="file"
+          onChange={handleFileChange}
+          className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+        />
+      </div>
+
+      {/* Category Dropdown */}
+      <div className="space-y-2">
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+          Post Category
+        </label>
+        <select
+          id="category"
+          name="category"
+          value={post.category}
+          onChange={fieldChanged}
+          className="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+        >
+          <option disabled value="">
+            -- Select category --
+          </option>
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <option value={category.categoryId} key={category.categoryId}>
+                {category.categoryTitle}
+              </option>
+            ))
+          ) : (
+            <option disabled>No categories available</option>
+          )}
+        </select>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row justify-center sm:justify-between gap-4 pt-4">
+        <button
+          type="submit"
+          className="w-full sm:w-auto px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+        >
+          Create Post
+        </button>
+        <button
+          type="button"
+          className="w-full sm:w-auto px-6 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring focus:ring-red-300"
+          onClick={() =>
+            setPost({
+              title: "",
+              content: "",
+              category: "",
+            })
+          }
+        >
+          Reset Content
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
+};
+
+export default AddPost;
+
+
+PostDetail.js:
+
+import React, { useState, useEffect,useRef } from 'react';
+import { useParams,useNavigate  } from 'react-router-dom';
+import { ref, get,set, update, child, push,remove } from "firebase/database";
+import { doc, updateDoc, getDoc,setDoc,deleteDoc } from "firebase/firestore";
+import { rtdb, db } from './firebase';
+import userIcon from '../img/user.png';
+import { auth } from './firebase';
+import { onAuthStateChanged } from "firebase/auth";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import app from './firebase';
+import EmojiPicker from 'emoji-picker-react';
+import StickerPicker from './stickerPicker';
+import { faEllipsisV,faHeart, faComment, faShare, faBookmark } from '@fortawesome/free-solid-svg-icons';
+import { faLinkedin, faTwitter, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+
+function PostDetail() {
+  const { postId } = useParams();
+  const [post, setPost] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [reaction, setReaction] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
+  const [user, setUser] = useState(null);
+  const [commentImage, setCommentImage] = useState(null);
+  const [replyInputs, setReplyInputs] = useState({});
+  const navigate = useNavigate();
+
+  const menuRef = useRef(null); // Create a ref for the menu
+
+  // Handle clicks outside the menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false); // Hide the menu
+      }
+    };
+
+    // Add event listener when the menu is shown
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup the event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user.uid);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+  useEffect(() => {
+    const fetchPostData = async () => {
+      const snapshot = await get(ref(rtdb, posts/${postId}));
+      if (snapshot.exists()) {
+        const postData = snapshot.val();
+    
+        const postUserRef = doc(db, users/${postData.userId});
+        const postUserDoc = await getDoc(postUserRef);
+    
+        if (postUserDoc.exists()) {
+          const postUserData = postUserDoc.data();
+          postData.userIcon = postUserData.photo || userIcon;
+        }
+    
+        const commentsWithPhotos = await Promise.all(
+          Object.entries(postData.comments || {}).map(async ([commentId, comment]) => {
+            const commentUserRef = doc(db, users/${comment.userId});
+            const commentUserDoc = await getDoc(commentUserRef);
+    
+            return {
+              ...comment,
+              id: commentId, // Add the commentId to the comment object
+              userIcon: commentUserDoc.exists() ? commentUserDoc.data().photo || userIcon : userIcon,
+            };
+          })
+        );
+    
+        setPost(postData);
+        setComments(commentsWithPhotos);
+        const currentUser = auth.currentUser;
+        if (currentUser && postData.likes) {
+          setIsLiked(Object.keys(postData.likes).includes(currentUser.uid));
+        }
+      } else {
+        console.error("Post not found");
+      }
+    };
+  
+    fetchPostData();
+  }, [postId]);
+  
+  
+  const handlePostComment = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser && newComment.trim()) {
+      const currentUserRef = doc(db, users/${currentUser.uid});
+      const currentUserDoc = await getDoc(currentUserRef);
+      
+      // Fetch user's display name and photo URL
+      let userName = currentUser.displayName || "Unknown User";
+      let userPhotoURL = userIcon;
+      
+      if (currentUserDoc.exists()) {
+        const currentUserData = currentUserDoc.data();
+        userName = ${currentUserData.firstName || ''} ${currentUserData.lastName || ''}.trim() || userName;
+        userPhotoURL = currentUserData.photo || userIcon;
+      }
+      
+      const newCommentObj = {
+        userId: currentUser.uid,
+        userName,
+        userIcon: userPhotoURL,
+        content: newComment,
+        timestamp: Date.now(),
+      };
+  
+      const commentsRef = ref(rtdb, posts/${postId}/comments);
+      const newCommentRef = push(commentsRef);
+      await update(newCommentRef, newCommentObj);
+  
+      // Update comments state to show the new comment
+      setComments([...comments, newCommentObj]);
+      setNewComment("");
+    }
+  };
+  
+  
+  
+
+const handleShareClick = () => {
+  setShowShareOptions(!showShareOptions);
+};
+
+useEffect(() => {
+  const checkIfSaved = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const savedPostRef = doc(db, users/${currentUser.uid}/savedPosts, postId);
+      const savedDoc = await getDoc(savedPostRef);
+      setIsSaved(savedDoc.exists()); // Set isSaved to true if the post is already saved
+    }
+  };
+  if (post) {
+    checkIfSaved();
+  }
+}, [post, postId]);
+
+
+const handleSavePost = async () => {
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const savedPostRef = doc(db, users/${currentUser.uid}/savedPosts, postId);
+
+    if (isSaved) {
+      // If the post is already saved, remove it
+      console.log("Removing post from saved posts...");
+      await deleteDoc(savedPostRef);
+      setIsSaved(false);
+      console.log("Post removed from saved posts.");
+      alert("Post removed from your saved posts.");
+    } else {
+      // If the post is not saved, save it
+      console.log("Saving post to saved posts...");
+      await setDoc(savedPostRef, {
+        title: post.title,
+        content: post.content,
+        timestamp: post.timestamp,
+        bannerUrl: post.bannerUrl,
+        category: post.category,
+        user: post.user,
+        userId: post.userId,
+      });
+      setIsSaved(true);
+      console.log("Post saved to saved posts.");
+      alert("Post saved to your profile!");
+    }
+  } else {
+    console.log("User not logged in.");
+  }
+};
+
+  
+  useEffect(() => {
+    const checkIfFollowing = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userRef = doc(db, users/${post.userId});
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+          const followers = userDoc.data().followers || [];
+          setIsFollowing(followers.some(follower => follower.uid === currentUser.uid));
+        }
+      }
+    };
+    if (post) {
+      checkIfFollowing();
+    }
+  }, [post]);
+
+  const handleFollow = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const postUserRef = doc(db, users/${post.userId});
+      const postUserDoc = await getDoc(postUserRef);
+      if (postUserDoc.exists()) {
+        const postUserData = postUserDoc.data();
+        const followers = postUserData.followers || [];
+        const currentUserRef = doc(db, users/${currentUser.uid});
+        const currentUserDoc = await getDoc(currentUserRef);
+        let fullName = "Unknown User";
+        if (currentUserDoc.exists()) {
+          const currentUserData = currentUserDoc.data();
+          fullName = ${currentUserData.firstName || ''} ${currentUserData.lastName || ''}.trim();
+        }
+        if (!followers.some(follower => follower.uid === currentUser.uid)) {
+          followers.push({ uid: currentUser.uid, name: fullName });
+          await updateDoc(postUserRef, { followers });
+          setIsFollowing(true);
+        }
+      }
+    } else {
+      console.log("User not logged in.");
+    }
+  };
+
+  const handleLike = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const likesRef = ref(rtdb, posts/${postId}/likes/${currentUser.uid});
+  
+      if (isLiked) {
+        // Unlike the post: Remove the user from likes
+        await remove(likesRef);  // Remove the user's like entry
+        setIsLiked(false);
+      } else {
+        // Like the post: Add the user's data to likes
+        const userName = currentUser.displayName || "Unknown User";
+        await set(likesRef, { userId: currentUser.uid, userName });
+        setIsLiked(true);
+      }
+    } else {
+      console.log("User not logged in.");
+    }
+  };
+  if (!post) {
+    return <div>Loading...</div>;
+  }
+
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
+
+  const handleDeletePost = async () => {
+    const confirmDelete = window.confirm("Do you want to delete the post?");
+    if (confirmDelete) {
+      try {
+        // Delete from Realtime Database
+        await remove(ref(rtdb, posts/${postId}));
+  
+        // Delete from Firestore if necessary
+        await deleteDoc(doc(db, 'posts', postId));
+  
+        alert("Post deleted successfully.");
+        navigate('/homepage');  // Redirect to homepage or another page
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        alert("Failed to delete post.");
+      }
+    }
+  };
+
+  const handleDelete = (commentId) => {
+    const commentRef = ref(rtdb, posts/${postId}/comments/${commentId});
+    remove(commentRef)
+      .then(() => {
+        console.log("Comment deleted successfully");
+        // Update the UI by removing the deleted comment
+        setComments(comments.filter(comment => comment.id !== commentId));
+      })
+      .catch((error) => {
+        console.error("Error deleting comment:", error);
+      });
+  };
+
+
+ return (
+  <div className="flex flex-col lg:flex-row">
+    <div className="p-4 bg-gray-100 mx-auto w-full lg:w-2/3 relative">
+      <div className="bg-white p-4 shadow-md rounded">
+        <h1 className="text-xl sm:text-2xl font-bold mb-4">{post.title}</h1>
+
+        {/* Three Dots Icon */}
+        <div className="flex justify-end mb-2">
+          {currentUser === post.userId && (
+            <>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="text-gray-500"
+              >
+                <FontAwesomeIcon icon={faEllipsisV} />
+              </button>
+              {showMenu && (
+                <div
+                  ref={menuRef}
+                  className="absolute right-4 mt-2 w-28 bg-white border border-gray-300 rounded shadow-lg z-10"
+                >
+                  <button
+                    onClick={handleDeletePost}
+                    className="block px-4 py-2 text-red-500 hover:bg-gray-100 w-full text-left"
+                  >
+                    Delete Post
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* User Info & Timestamp */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+          <div className="flex items-start">
+            <img src={post.userIcon || userIcon} alt="User" className="w-10 h-10 rounded-full mr-4" />
+            <div>
+              <p className="font-bold">
+                {post.user || "Unknown User"}
+                {post.userId !== auth.currentUser?.uid && (
+                  <button
+                    onClick={handleFollow}
+                    className={ml-2 mt-1 sm:mt-0 p-1 text-sm ${isFollowing ? 'bg-gray-300' : 'bg-blue-500'} text-white rounded}
+                    disabled={isFollowing}
+                  >
+                    {isFollowing ? "Following" : "Follow"}
+                  </button>
+                )}
+              </p>
+              <p className="text-sm text-gray-500">Category: {post.category?.categoryTitle || "Uncategorized"}</p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-500 mt-2 sm:mt-0">{formatDate(post.timestamp)}</p>
+        </div>
+
+        {/* Banner Image */}
+        <img
+          src={post.bannerUrl}
+          alt={post.title}
+          className="w-full h-auto max-h-96 object-cover mb-4 rounded"
+        />
+
+        {/* Post Content */}
+        <div
+          className="text-base sm:text-lg"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
+
+        {/* Interaction Buttons */}
+        <div className="flex flex-wrap justify-between items-center mt-4 px-2 py-2 border-t gap-2">
+          <button
+            className="flex items-center space-x-2 text-gray-600 hover:text-red-500"
+            onClick={handleLike}
+            style={{ color: isLiked ? 'red' : 'black' }}
+          >
+            <FontAwesomeIcon icon={faHeart} />
+            <span>{isLiked ? "Liked" : "Like"}</span>
+          </button>
+
+          <button
+            onClick={() => setShowComments(true)}
+            className="flex items-center space-x-2 text-gray-600 hover:text-blue-500"
+          >
+            <FontAwesomeIcon icon={faComment} />
+            <span>Comment</span>
+          </button>
+
+          <button
+            onClick={handleShareClick}
+            className="flex items-center space-x-2 text-gray-600 hover:text-green-500"
+          >
+            <FontAwesomeIcon icon={faShare} />
+            <span>Share</span>
+          </button>
+
+          <button
+            onClick={handleSavePost}
+            className="flex items-center space-x-2 text-gray-600 hover:text-yellow-500"
+            style={{ color: isSaved ? 'green' : 'black' }}
+          >
+            <FontAwesomeIcon icon={faBookmark} />
+            <span>{isSaved ? "Saved" : "Save"}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Comments Sidebar (Responsive: takes full width on mobile) */}
+    {showComments && (
+      <div className="fixed inset-x-0 bottom-0 lg:static lg:inset-auto lg:w-1/3 h-72 lg:h-auto bg-white shadow-md p-4 overflow-y-auto z-40">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg sm:text-xl font-bold">Comments</h2>
+          <button onClick={() => setShowComments(false)} className="text-gray-600 text-xl">✕</button>
+        </div>
+        <div className="mt-4 space-y-4">
+          {comments.map((comment, index) => (
+            <div
+              key={comment.id}
+              className="bg-gray-100 p-3 rounded-lg shadow hover:bg-gray-200"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                if (currentUser === comment.userId) {
+                  if (window.confirm("Do you want to delete this comment?")) {
+                    handleDelete(comment.id);
+                  }
+                } else {
+                  alert("You are not authorized to delete this comment.");
+                }
+              }}
+            >
+              <div className="flex items-center mb-2">
+                <img src={comment.userIcon || userIcon} alt="User" className="w-8 h-8 rounded-full mr-3" />
+                <div>
+                  <p className="font-semibold text-sm">{comment.userName}</p>
+                  <p className="text-sm">{comment.content}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Add Comment Input */}
+        <div className="flex items-center mt-4">
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Add a comment..."
+            className="flex-1 p-2 border rounded-l-md text-sm"
+          />
+          <button onClick={handlePostComment} className="p-2 bg-blue-500 text-white rounded-r-md text-sm">Post</button>
+        </div>
+      </div>
+    )}
+
+    {/* Share Options Modal (Responsive Centered) */}
+    {showShareOptions && (
+      <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50 z-50 px-2">
+        <div className="bg-white p-4 rounded shadow-lg space-y-4 w-full max-w-sm relative">
+          <h3 className="text-lg font-bold">Share on:</h3>
+          <button
+            onClick={() => setShowShareOptions(false)}
+            className="absolute top-2 right-2 text-gray-600 text-xl"
+          >
+            ✕
+          </button>
+          <div className="flex flex-col space-y-2">
+            <a
+              href={https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(post.title)}}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2"
+            >
+              <FontAwesomeIcon icon={faLinkedin} />
+              <span>LinkedIn</span>
+            </a>
+            <a
+              href={https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2"
+            >
+              <FontAwesomeIcon icon={faTwitter} />
+              <span>Twitter</span>
+            </a>
+            <a
+              href={https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2"
+            >
+              <FontAwesomeIcon icon={faFacebook} />
+              <span>Facebook</span>
+            </a>
+            <a
+              href={https://wa.me/?text=${encodeURIComponent(post.title + " " + window.location.href)}}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2"
+            >
+              <FontAwesomeIcon icon={faWhatsapp} />
+              <span>WhatsApp</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+}
+
+export default PostDetail;
+
+App.js:
+
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import SignIn from "./components/SignIn";
+import SignUp from "./components/register";
+import Profile from "./components/profile";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { auth } from "./components/firebase";
+import HomePage from "./components/HomePage";
+import AddPost from "./components/AddPost";
+import CategoryPage from "./components/CategoryPage";
+// import { BackgroundBeamsWithCollisionDemo } from './components/BackgroundBeamsWithCollisionDemo';
+// import { BackgroundBeamsWithCollision } from './components/  ui/background-beams-with-collision';
+import PostDetail from "./components/PostDetail";
+import LandingPage from "./LandingPage";
+import { Navbar } from "./components/Navbar";
+import { Navbar2 } from "./components/Navbar2";
+
+const Home = () => (
+  <div className="h-20 px-5 flex items-center justify-between">
+    <h2 className="text-black font-bold">Lets Blog</h2>
+    <div className="flex gap-8">
+      <h4 className="text-black cursor-pointer">Our Story</h4>
+
+      <Link to="/signin">
+        <h4 className="cursor-pointer text-black">Sign In</h4>
+      </Link>
+    </div>
+  </div>
+);
+
+const App = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  return (
+    <Router>
+      
+      <Routes>
+        
+        <Route
+          path="/"
+          element={
+            <div>
+              <Home />
+              <LandingPage />
+            </div>
+          }
+        />
+
+<Route path="/homepage" element={<Navbar />} />
+        <Route path="/addpost" element={<AddPost />} />
+        <Route path="/post/:postId" element={<PostDetail />} />
+        <Route path="/categorypage" element={<CategoryPage />} />
+        {/* <Route path="/navbar" element={<Navbar />} /> */}
+        <Route path="/profile" element={<Navbar2/>} />
+
+        <Route
+          path="/signin"
+          element={
+            <div className="flex justify-center items-center h-screen">
+              <div className="bg-white shadow-md rounded-lg p-8 w-96">
+                <SignIn />
+              </div>
+            </div>
+          }
+        />
+
+        <Route
+          path="/register"
+          element={
+            <div className="flex justify-center items-center h-screen">
+              <div className="bg-white shadow-md rounded-lg p-8 w-96">
+                <SignUp />
+              </div>
+            </div>
+          }
+        />
+       
+      </Routes>
+      <ToastContainer />
+    </Router>
+  );
+};
+
+export default App;
+
+├── Backend/                         # Express backend
+│   ├── config/
+│   │   └── db.js                  # MongoDB connection
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── postController.js
+│   │   └── userController.js
+│   ├── middleware/
+│   │   └── authMiddleware.js      # JWT verify
+│   ├── models/
+│   │   ├── User.js
+│   │   └── Post.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── postRoutes.js
+│   │   └── userRoutes.js
+│   ├── uploads/                   # For profile/banner images
+│   ├── .env
+│   ├── server.js                  # Main Express app
+│   └── package.json
+│
+├── .gitignore
+├── README.md
+└── package.json
+

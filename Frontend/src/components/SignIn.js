@@ -1,45 +1,44 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { auth } from "./firebase";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { getFirestore, doc, getDoc } from "firebase/firestore"; // Import Firestore functions
+import { loginUser,getUserById } from "../api/api"; // <-- your backend API call
 import "react-toastify/dist/ReactToastify.css";
-import SignInwithGoogle from "./signInWIthGoogle";
+import GoogleAuthHandler from "./GoogleAuthHandler";
+
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const db = getFirestore(); // Initialize Firestore
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { data } = await loginUser({ email, password });
 
-      // Check if the user has followed topics in Firestore
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
+      // Optionally store token and user info (if using JWT auth)
+      localStorage.setItem("token", data.token);
+    localStorage.setItem("userId", data.userId);
 
-      if (userDocSnap.exists() && userDocSnap.data().followedTopics?.length > 0) {
-        // Redirect to homepage if user has followed topics
+    const user = await getUserById(data.userId, data.token);
+     
+
+      if (user.data.followedTopics?.length > 0) {
         navigate("/HomePage");
       } else {
-        // Redirect to category page if no followed topics found
         navigate("/CategoryPage");
       }
-
-      toast.success("User logged in Successfully", {
-        position: "top-center",
-      });
     } catch (error) {
-      console.log(error.message);
-      toast.error(error.message, {
+      console.error(error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || "Login failed", {
         position: "bottom-center",
       });
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   return (
@@ -74,10 +73,19 @@ function SignIn() {
         </button>
       </div>
 
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Sign in with Google
+        </button>
+      </div>
+
       <p className="text-right text-sm mt-2">
         New user? <a href="/register" className="text-blue-500 hover:underline">Register Here</a>
       </p>
-      <SignInwithGoogle />
     </form>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore";
-import { auth, db } from "./firebase"; // Ensure correct import
 import { toast } from "react-toastify"; // Import toast for notifications
+import { registerUser } from "../api/api"; // Import the registerUser function
+import { useNavigate,Navigate } from "react-router-dom"; // Import useNavigate for redirection
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -12,35 +13,34 @@ function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    const defaultCategories = [
+      "Data Science",
+      "Self Improvement",
+      "Technology",
+      "Writing",
+      "Relationships",
+    ];
+
+    const userData = {
+      email,
+      password,
+      firstName: fname,
+      lastName: lname,
+      followedTopics: [],
+      categories: defaultCategories,
+    };
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Define default categories to be stored in Firestore
-      const defaultCategories = [
-        "Data Science",
-        "Self Improvement",
-        "Technology",
-        "Writing",
-        "Relationships"
-      ];
-
-      // Create user document in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        firstName: fname,
-        lastName: lname,
-        followedTopics: [], // Initially no topics followed
-        categories: defaultCategories // Add categories field
-      });
-
-      console.log("User Registered Successfully!!");
+      const res = await registerUser(userData);
       toast.success("User Registered Successfully!!", {
         position: "top-center",
       });
+      Navigate("/signin"); // Redirect to SignIn page after successful registration
+
     } catch (error) {
       console.error(error.message);
-      toast.error(error.message, {
+      toast.error("Registration failed", {
         position: "bottom-center",
       });
     }
