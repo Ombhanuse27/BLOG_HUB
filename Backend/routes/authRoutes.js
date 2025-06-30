@@ -54,7 +54,7 @@ router.get("/google/callback", async (req, res) => {
     });
 
     res.redirect(
-      `http://localhost:3000/google-auth?token=${token}&userId=${user._id}`
+      `https://blog-site-7nd8v5hb6-ombhanuse7-gmailcoms-projects.vercel.app/google-auth?token=${token}&userId=${user._id}`
     );
   } catch (err) {
     console.error(err);
