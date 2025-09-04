@@ -78,6 +78,11 @@ router.post('/register', async (req, res) => {
   }
 });
 
+
+router.get("/getcron", (req, res) => {
+  res.status(200).send("Cron ping successful at " + new Date().toISOString());
+});
+
 // Login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
