@@ -49,17 +49,29 @@ function HomePage() {
 }, []);
 
 const handleSavePost = async (postId) => {
+  // 1. Store the original state so you can revert if something goes wrong.
+  const originalSavedPosts = [...savedPosts];
+
+  // 2. Immediately update the UI. This is the "optimistic" part.
+  if (savedPosts.includes(postId)) {
+    // If already saved, update the UI to show it as unsaved.
+    setSavedPosts(savedPosts.filter(id => id !== postId));
+  } else {
+    // If not saved, update the UI to show it as saved.
+    setSavedPosts([...savedPosts, postId]);
+  }
+
   try {
-    const res = await toggleSavePost(postId);
-    if (res.success) {
-      if (savedPosts.includes(postId)) {
-        setSavedPosts(savedPosts.filter(id => id !== postId));
-      } else {
-        setSavedPosts([...savedPosts, postId]);
-      }
-    }
+    // 3. Make the API call in the background.
+    await toggleSavePost(postId);
+    // If it succeeds, you don't need to do anything because the UI is already correct.
+    
   } catch (err) {
-    console.error("Error toggling saved post:", err);
+    // 4. If the API call fails, revert the UI to its original state.
+    console.error("Failed to save the post. Reverting the change.", err);
+    setSavedPosts(originalSavedPosts);
+    // Optional: Show an error message to the user.
+    // alert("Couldn't save post. Please try again.");
   }
 };
 

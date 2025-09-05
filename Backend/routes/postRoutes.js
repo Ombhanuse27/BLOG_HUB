@@ -53,6 +53,35 @@ router.put('/:id/like', authMiddleware, async (req, res) => {
   res.json(post.likes);
 });
 
+// ✅ NEW: Update a comment by ID
+router.put('/:postId/comments/:commentId', authMiddleware, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        if (comment.userId.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'User not authorized' });
+        }
+
+        comment.content = req.body.content;
+        await post.save();
+
+        res.json({ success: true, comment });
+
+    } catch (err) {
+        console.error("Error updating comment:", err);
+        res.status(500).json({ error: 'Server error while updating comment' });
+    }
+});
+
+
 // Save/unsave post
 router.put('/:id/save', authMiddleware, async (req, res) => {
   const user = await User.findById(req.user.id);

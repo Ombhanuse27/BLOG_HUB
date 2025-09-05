@@ -2,6 +2,7 @@ import axios from "axios";
 
 
 const BASE_URL = "https://blog-hub-ud2n.onrender.com/api"; // Update with your backend URL
+//const BASE_URL = "http://localhost:5000/api"; // Local backend URL for development
 
 
 const getAuthHeader = () => {
@@ -90,6 +91,15 @@ export const postComment = async (postId, commentData) => {
 export const deleteCommentById = async (postId, commentId) => {
   const res = await axios.delete(`${BASE_URL}/posts/${postId}/comments/${commentId}`, getAuthHeader());
   return res.data;
+};
+
+export const updateCommentById = async (postId, commentId, content) => {
+    const res = await axios.put(
+        `${BASE_URL}/posts/${postId}/comments/${commentId}`,
+        { content }, // Request body
+        getAuthHeader()
+    );
+    return res.data;
 };
 
 
