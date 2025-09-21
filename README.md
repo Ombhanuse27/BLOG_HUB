@@ -8,6 +8,7 @@ A **full-stack blogging platform** built using **MERN stack (MongoDB, Express.js
 
 - 🔑 **Authentication**
   - OAuth login (Google)
+  - Register and Login
   - JWT-based sessions
 - 🖊 **Blog Management**
   - Create, edit, and delete posts
@@ -49,5 +50,6 @@ A **full-stack blogging platform** built using **MERN stack (MongoDB, Express.js
 - Vercel / Render for deployment 
 
 ---
+
 
 
