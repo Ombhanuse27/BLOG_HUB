@@ -24,11 +24,11 @@ import GoogleAuthHandler from "./components/GoogleAuthHandler"; // your Google a
 
 const Home = () => (
   <div className="h-20 px-5 flex items-center justify-between">
-    <h2 className="text-black font-bold">Lets Blog</h2>
+    <h2 className="text-black mt-8  text-2xl font-bold">BLOG_HUB</h2>
     <div className="flex gap-8">
-      <h4 className="text-black cursor-pointer">Our Story</h4>
+      <h4 className="text-black text-xl mt-8 cursor-pointer">Our Story</h4>
       <Link to="/signin">
-        <h4 className="cursor-pointer text-black">Sign In</h4>
+        <h4 className="cursor-pointer mt-8 text-xl text-black">Sign In</h4>
       </Link>
     </div>
   </div>

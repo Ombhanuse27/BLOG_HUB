@@ -1,28 +1,32 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
-import { loginUser,getUserById } from "../api/api"; // <-- your backend API call
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser, getUserById } from "../api/api";
 import "react-toastify/dist/ReactToastify.css";
-import GoogleAuthHandler from "./GoogleAuthHandler";
 
+// Import icons (e.g., from react-icons)
+import { FcGoogle } from "react-icons/fc";
+import { FiMail, FiLock } from "react-icons/fi";
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email || !password) {
+      return toast.error("Please fill in both fields.", { position: "bottom-center" });
+    }
+    setIsLoading(true);
 
     try {
       const { data } = await loginUser({ email, password });
-
-      // Optionally store token and user info (if using JWT auth)
       localStorage.setItem("token", data.token);
-    localStorage.setItem("userId", data.userId);
+      localStorage.setItem("userId", data.userId);
 
-    const user = await getUserById(data.userId, data.token);
-     
+      const user = await getUserById(data.userId, data.token);
 
       if (user.data.followedTopics?.length > 0) {
         navigate("/HomePage");
@@ -34,6 +38,8 @@ function SignIn() {
       toast.error(error.response?.data?.message || "Login failed", {
         position: "bottom-center",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,51 +48,86 @@ function SignIn() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <h3 className="text-center text-xl font-semibold">Login</h3>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-800">Welcome Back!</h1>
+          <p className="text-gray-500 mt-2">Sign in to continue to your account.</p>
+        </div>
 
-      <div className="mb-3">
-        <label className="block mb-1 font-semibold">Email address</label>
-        <input
-          type="email"
-          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email Input */}
+          <div className="relative">
+            <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="email"
+              className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              placeholder="Enter email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Password Input */}
+          <div className="relative">
+            <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="password"
+              className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div>
+            <button
+              type="submit"
+              className="w-full p-3 text-white bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-400 flex items-center justify-center"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+              ) : (
+                "Sign In"
+              )}
+            </button>
+          </div>
+        </form>
+
+        {/* Separator */}
+        <div className="flex items-center justify-center">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="mx-4 text-gray-500 text-sm">OR</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        {/* Google Sign-In Button */}
+        <div>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="w-full p-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-3"
+          >
+            <FcGoogle size={22} />
+            <span>Sign in with Google</span>
+          </button>
+        </div>
+
+        {/* Registration Link */}
+        <p className="text-center text-sm text-gray-600">
+          New user?{' '}
+          <Link to="/register" className="font-semibold text-blue-600 hover:underline">
+            Register Here
+          </Link>
+        </p>
       </div>
-
-      <div className="mb-3">
-        <label className="block mb-1 font-semibold">Password</label>
-        <input
-          type="password"
-          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-
-      <div className="mt-6">
-        <button type="submit" className="w-full p-2 text-white bg-blue-600 rounded hover:bg-blue-700">
-          Submit
-        </button>
-      </div>
-
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={handleGoogleSignIn}
-          className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Sign in with Google
-        </button>
-      </div>
-
-      <p className="text-right text-sm mt-2">
-        New user? <a href="/register" className="text-blue-500 hover:underline">Register Here</a>
-      </p>
-    </form>
+    </div>
   );
 }
 

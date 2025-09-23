@@ -1,303 +1,410 @@
-// Updated Profile.js using clean API abstraction
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getUserById,
   uploadImageToCloudinary,
   getSavedPosts,
-  updateUserById
+  updateUserById,
 } from "../api/api";
-import { Link, useNavigate } from "react-router-dom";
-import userIcon from "../img/user.png";
-import like from "../img/like.png";
-import comment from "../img/comment.png";
 
+// Assuming you have these icons or similar ones
+import userIcon from "../img/user.png";
+import likeIcon from "../img/like.png";
+import commentIcon from "../img/comment.png";
+
+// You'll need to install a library like @tabler/icons-react
+// npm install @tabler/icons-react
+import { IconUser, IconMapPin, IconPhone, IconLink, IconCalendar, IconHome, IconBookmarkOff } from "@tabler/icons-react";
+
+// --- Skeleton Loaders for a Better Loading Experience ---
+
+const ProfileSkeleton = () => (
+  <div className="animate-pulse">
+    {/* Header Skeleton */}
+    <div className="flex flex-col items-center p-6 bg-gray-50 border-b">
+      <div className="w-32 h-32 rounded-full bg-gray-300"></div>
+      <div className="h-8 w-48 bg-gray-300 rounded mt-4"></div>
+      <div className="h-4 w-64 bg-gray-300 rounded mt-2"></div>
+      <div className="flex gap-4 mt-4">
+        <div className="h-10 w-28 bg-gray-300 rounded-full"></div>
+        <div className="h-10 w-24 bg-gray-300 rounded-full"></div>
+      </div>
+    </div>
+    {/* Tabs Skeleton */}
+     <div className="flex justify-center gap-4 p-4 bg-gray-50">
+        <div className="h-10 w-32 bg-gray-200 rounded-full"></div>
+        <div className="h-10 w-32 bg-gray-200 rounded-full"></div>
+     </div>
+    {/* Content Skeleton */}
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 p-4 md:p-6">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="bg-white rounded-xl shadow-md p-4">
+          <div className="h-24 bg-gray-300 rounded-lg"></div>
+          <div className="flex items-center mt-3">
+            <div className="w-10 h-10 rounded-full bg-gray-300 mr-3"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-gray-300 rounded"></div>
+              <div className="h-4 w-3/4 bg-gray-300 rounded"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+
+// --- Reusable UI Components ---
+
+const ErrorDisplay = ({ message }) => (
+    <div className="flex flex-col items-center justify-center h-full text-center text-red-500 p-10">
+      <p className="text-xl font-semibold">Oops! Something went wrong.</p>
+      <p className="mt-2">{message || "Could not load data. Please try refreshing the page."}</p>
+    </div>
+);
+
+// --- Sub-components for Profile Page ---
+
+const ProfileHeader = ({ user, onEdit, onLogout }) => (
+  <div className="flex flex-col items-center text-center p-6 bg-gray-50 border-b border-gray-200">
+    <img
+      src={user.photo || userIcon}
+      className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl"
+      alt="Profile"
+    />
+    <h3 className="mt-4 text-3xl font-bold text-gray-800">
+      {user.name ? `Welcome, ${user.name}` : "Welcome 👋"}
+    </h3>
+    <p className="text-gray-500 mt-1">{user.email}</p>
+    <div className="flex gap-4 mt-4">
+      <button
+        className="px-5 py-2 text-sm font-semibold bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105"
+        onClick={onEdit}
+      >
+        Edit Profile
+      </button>
+      <button
+        onClick={onLogout}
+        className="px-5 py-2 text-sm font-semibold bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-transform transform hover:scale-105"
+      >
+        Logout
+      </button>
+    </div>
+  </div>
+);
+
+const ProfileTabs = ({ selected, onSelect }) => (
+  <div className="flex justify-center gap-4 p-4 bg-gray-50">
+    {["Saved Posts", "About"].map((section) => (
+      <button
+        key={section}
+        onClick={() => onSelect(section)}
+        className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+          selected === section
+            ? "bg-blue-600 text-white shadow-lg"
+            : "bg-white text-gray-700 hover:bg-gray-200"
+        }`}
+      >
+        {section}
+      </button>
+    ))}
+  </div>
+);
+
+const SavedPostsSection = ({ posts }) => {
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "No Date";
+    return new Date(timestamp).toLocaleDateString("en-US", {
+      year: "numeric", month: "short", day: "numeric",
+    });
+  };
+
+  if (posts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-10 text-gray-500">
+        <IconBookmarkOff size={48} className="mb-4" />
+        <p className="text-lg font-semibold">You haven’t saved any posts yet.</p>
+        <p className="text-gray-400 mt-2">Start exploring and save posts you find interesting!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 p-4 md:p-6">
+      {posts.map((post) => (
+        <Link to={`/post/${post._id}`} key={post._id} className="block group">
+          <div className="bg-white rounded-xl shadow-md overflow-hidden h-full transform transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+            {post.bannerUrl && (
+              <img
+                src={post.bannerUrl}
+                alt={post.title}
+                className="w-full h-40 object-cover"
+              />
+            )}
+            <div className="p-4 flex flex-col">
+              <div className="flex items-center mb-3">
+                <img
+                  src={post.userIcon || userIcon}
+                  alt="User"
+                  className="w-10 h-10 rounded-full object-cover mr-3"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{post.user || "Unknown"}</p>
+                  <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 flex-grow">
+                {post.title || "No Title"}
+              </h3>
+              <div className="flex items-center text-sm text-gray-600 mt-4 gap-4 border-t pt-3">
+                <div className="flex items-center gap-1.5">
+                  <img src={likeIcon} alt="Likes" className="w-5 h-5" />
+                  <span>{post.likesCount || 0}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <img src={commentIcon} alt="Comments" className="w-5 h-5" />
+                  <span>{post.commentsCount || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+};
+
+const AboutSection = ({ user }) => {
+    const details = [
+        { label: "Name", value: user.name, icon: <IconUser size={20} /> },
+        { label: "Address", value: user.address, icon: <IconHome size={20} /> },
+        { label: "Phone", value: user.phone, icon: <IconPhone size={20} /> },
+        { label: "Social Link", value: user.socialLink, icon: <IconLink size={20} /> },
+        { label: "Location", value: user.location, icon: <IconMapPin size={20} /> },
+        { label: "Date of Birth", value: user.dob, icon: <IconCalendar size={20} /> },
+    ];
+
+    return (
+    <div className="p-4 md:p-6">
+        <div className="bg-white p-6 rounded-xl shadow-md space-y-4 text-gray-700">
+            {details.map(({label, value, icon}) => (
+                <div key={label} className="flex items-center border-b pb-3 last:border-b-0">
+                    <div className="text-gray-500 mr-4">{icon}</div>
+                    <div className="flex-1">
+                        <p className="text-xs text-gray-500">{label}</p>
+                        {label === "Social Link" && value ? (
+                             <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all font-medium">
+                                {value}
+                            </a>
+                        ) : (
+                            <p className="text-gray-900 font-medium">{value || "Not provided"}</p>
+                        )}
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+    );
+};
+
+
+const EditProfileModal = ({ show, onClose, data, onChange, onFileChange, onSave, isSaving }) => {
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          Edit Your Profile
+        </h2>
+        <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">Profile Photo</label>
+             <input
+                type="file"
+                accept="image/*"
+                onChange={onFileChange}
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          {["name", "address", "phone", "socialLink", "location", "dob"].map((field) => (
+            <div key={field}>
+                <label className="block text-sm font-medium text-gray-700 capitalize">{field.replace('Link', ' Link')}</label>
+                <input
+                    name={field}
+                    type={field === 'dob' ? 'date' : 'text'}
+                    placeholder={`Your ${field}`}
+                    value={data[field] || ""}
+                    onChange={onChange}
+                    className="mt-1 w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-end gap-4 mt-8">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300"
+            disabled={isSaving}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onSave}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center w-32 disabled:bg-blue-400"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+            ) : (
+              "Save Changes"
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN PROFILE COMPONENT ---
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
   const [selectedSection, setSelectedSection] = useState("Saved Posts");
   const [savedPosts, setSavedPosts] = useState([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [editData, setEditData] = useState({
-    photo: "",
-    name: "",
-    address: "",
-    phone: "",
-    socialLink: "",
-    location: "",
-    dob: "",
-  });
+  const [editData, setEditData] = useState({});
+  const [error, setError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  
   const navigate = useNavigate();
 
- const fetchUserData = async () => {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-
-  if (!token || !userId) {
-    console.error("No token or user ID found");
-    return;
-  }
-
-  try {
-    const res = await getUserById(userId, token);
-    setUserDetails(res.data);
-    setEditData(res.data);
-  } catch (error) {
-    console.error("Failed to fetch user data", error);
-  }
-};
-
-
-const fetchSavedPosts = async () => {
-  const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("token");
-
-  if (!userId || !token) return;
-
-  try {
-    const res = await getSavedPosts(userId, token);
-    const enrichedPosts = await Promise.all(
-      res.map(async (post) => {
-        let userIconUrl = userIcon;
-        let likesCount = post.likes ? post.likes.length : 0;
-        let commentsCount = post.comments ? post.comments.length : 0;
-
-        try {
-          const userRes = await getUserById(post.userId, token);
-          userIconUrl = userRes.data.photo || userIcon;
-        } catch (err) {
-          console.warn(`Could not fetch user for post: ${post._id}`);
-        }
-
-        return {
-          ...post,
-          userIcon: userIconUrl,
-          likesCount,
-          commentsCount,
-        };
-      })
-    );
-
-    setSavedPosts(enrichedPosts);
-  } catch (err) {
-    console.error("Failed to fetch saved posts", err);
-  }
-};
-
-
-
-  useEffect(() => {
-    fetchUserData();
-    fetchSavedPosts();
-  }, []);
-
-  const handleLogout = async () => {
+  const fetchInitialData = useCallback(async (userId, token) => {
     try {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
-      navigate("/SignIn");
+        setError(null);
+        // Promise.all to fetch user data and posts concurrently
+        const [userRes, postsRes] = await Promise.all([
+            getUserById(userId, token),
+            getSavedPosts(userId, token)
+        ]);
+
+        setUserDetails(userRes.data);
+        setEditData(userRes.data);
+
+        // Enrich post data after fetching
+        const enrichedPosts = await Promise.all(
+            postsRes.map(async (post) => {
+                let userIconUrl = userIcon;
+                try {
+                    const postUserRes = await getUserById(post.userId, token);
+                    userIconUrl = postUserRes.data.photo || userIcon;
+                } catch (err) {
+                    console.warn(`Could not fetch user for post: ${post._id}`);
+                }
+                return {
+                    ...post,
+                    userIcon: userIconUrl,
+                    likesCount: post.likes?.length || 0,
+                    commentsCount: post.comments?.length || 0,
+                };
+            })
+        );
+        setSavedPosts(enrichedPosts);
 
     } catch (err) {
-      console.error("Logout error", err);
+      console.error("Failed to fetch initial profile data", err);
+      setError("We couldn't load your profile. Please check your connection and try again.");
     }
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+    if (!token || !userId) {
+      navigate("/SignIn");
+      return;
+    }
+    fetchInitialData(userId, token);
+  }, [fetchInitialData, navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    navigate("/SignIn");
   };
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     setEditData((prev) => ({ ...prev, [name]: value }));
   };
+  
+  const handleFileChange = (e) => {
+    setEditData((prev) => ({ ...prev, photo: e.target.files[0] }));
+  };
 
   const handleSaveProfile = async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+    if (!userId || !token) return;
 
-      if (!userId || !token) {
-        
-        return;
+    setIsSaving(true);
+    try {
+      let dataToUpdate = { ...editData };
+      if (editData.photo && editData.photo instanceof File) {
+        const photoUrl = await uploadImageToCloudinary(editData.photo);
+        dataToUpdate.photo = photoUrl;
       }
       
-
-      let photoUrl = userDetails.photo;
-      if (editData.photo && editData.photo instanceof File) {
-        photoUrl = await uploadImageToCloudinary(editData.photo);
-      }
-
-      const updated = await updateUserById(userId, { ...editData, photo: photoUrl }, token);
-      setUserDetails(updated);
-      setEditData(updated);
+      const updatedUser = await updateUserById(userId, dataToUpdate, token);
+      setUserDetails(updatedUser.data);
       setShowEditProfile(false);
     } catch (err) {
       console.error("Profile update failed", err);
+      // You could add a toast notification here for the error
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "No Date";
-    const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  // Conditional Rendering Logic
+  if (error) {
+    return <ErrorDisplay message={error} />;
+  }
+
+  if (!userDetails) {
+    return <ProfileSkeleton />;
+  }
 
   return (
-    <div className="w-full min-h-screen bg-gray-100 py-6 px-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6 overflow-y-auto flex-grow h-[calc(100vh-16rem)]">
-        {userDetails ? (
-          <>
-            {/* Header */}
-            <div className="flex flex-col items-center text-center">
-              <img
-                src={userDetails.photo || userIcon}
-                className="w-24 h-24 rounded-full object-cover border-4 border-gray-300 shadow"
-                alt="Profile"
-              />
-              <h3 className="mt-4 text-lg sm:text-xl font-semibold">
-                Welcome {userDetails.firstName || userDetails.name} 🙏
-              </h3>
-              <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Email: {userDetails.email}
-              </p>
-              <button
-                className="mt-3 text-blue-600 hover:underline text-sm"
-                onClick={() => setShowEditProfile(true)}
-              >
-                Edit Profile
-              </button>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex justify-center flex-wrap gap-2 sm:space-x-4 mt-6 border-b pb-2">
-              {["Saved Posts", "About"].map((section) => (
-                <button
-                  key={section}
-                  onClick={() => setSelectedSection(section)}
-                  className={`px-4 py-2 font-medium text-sm sm:text-base ${
-                    selectedSection === section
-                      ? "border-b-4 border-blue-600 text-blue-600"
-                      : "text-gray-500 hover:text-blue-600"
-                  }`}
-                >
-                  {section}
-                </button>
-              ))}
-            </div>
-
-            {/* Edit Modal */}
-            {showEditProfile && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-2">
-                <div className="bg-white p-4 sm:p-6 rounded-xl w-full max-w-md">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4">
-                    Edit Profile
-                  </h2>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setEditData((prev) => ({ ...prev, photo: e.target.files[0] }))
-                    }
-                    className="mb-2"
-                  />
-                  {["name", "address", "phone", "socialLink", "location", "dob"].map((field) => (
-                    <input
-                      key={field}
-                      name={field}
-                      placeholder={field[0].toUpperCase() + field.slice(1)}
-                      value={editData[field]}
-                      onChange={handleEditInputChange}
-                      className="w-full mb-2 p-2 border rounded text-sm"
-                    />
-                  ))}
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <button
-                      onClick={() => setShowEditProfile(false)}
-                      className="px-4 py-2 bg-gray-300 rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveProfile}
-                      className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </div>
-              </div>
+    <>
+      <div className="flex-1 flex flex-col bg-white overflow-hidden">
+          <ProfileHeader 
+              user={userDetails} 
+              onEdit={() => setShowEditProfile(true)}
+              onLogout={handleLogout}
+          />
+          <ProfileTabs 
+              selected={selectedSection} 
+              onSelect={setSelectedSection}
+          />
+          
+          <div className="overflow-y-auto flex-1 bg-gray-50">
+            {selectedSection === "Saved Posts" ? (
+              <SavedPostsSection posts={savedPosts} />
+            ) : (
+              <AboutSection user={userDetails} />
             )}
-
-            {/* Content Section */}
-            <div className="mt-6">
-              {selectedSection === "Saved Posts" ? (
-                <>
-                  <h2 className="text-xl sm:text-2xl font-semibold mb-4">Your Saved Posts</h2>
-                  {savedPosts.length > 0 ? (
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                      {savedPosts.map((post) => (
-                        <Link to={`/post/${post._id}`} key={post._id}>
-                          <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition flex flex-col sm:flex-row">
-                            <div className="flex-1 sm:pr-4">
-                              <div className="flex items-start gap-4">
-                                <img
-                                  src={post.userIcon || userIcon}
-                                  alt="User"
-                                  className="w-10 h-10 rounded-full"
-                                />
-                                <div className="flex-1">
-                                  <p className="text-sm font-semibold text-gray-800">
-                                    {post.user || "Unknown"}
-                                  </p>
-                                  <h3 className="text-base sm:text-lg font-bold mt-1">
-                                    {post.title || "No Title"}
-                                  </h3>
-                                  <div className="flex items-center text-xs sm:text-sm text-gray-500 mt-2 flex-wrap gap-2">
-                                    <span>{formatDate(post.createdAt)}</span>
-                                    <div className="flex items-center gap-2 ml-0 sm:ml-4">
-                                      <img src={like} alt="Likes" className="w-4 h-4 sm:w-5 sm:h-5" />
-                                      <span>{post.likesCount || 0}</span>
-                                      <img src={comment} alt="Comments" className="w-5 h-5 sm:w-6 sm:h-6 ml-2" />
-                                      <span>{post.commentsCount || 0}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="mt-3 sm:mt-0 sm:ml-2">
-                              <img
-                                src={post.bannerUrl || "https://via.placeholder.com/150"}
-                                alt={post.title || "Post"}
-                                className="w-full sm:w-32 h-24 object-cover rounded"
-                              />
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-sm">You haven’t saved any posts yet.</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xl sm:text-2xl font-semibold mb-4">About</h2>
-                  <div className="space-y-2 text-gray-700 text-sm sm:text-base">
-                    <p><span className="font-medium">Name:</span> {userDetails.name || "N/A"}</p>
-                    <p><span className="font-medium">Address:</span> {userDetails.address || "N/A"}</p>
-                    <p><span className="font-medium">Phone:</span> {userDetails.phone || "N/A"}</p>
-                    <p><span className="font-medium">Social Link:</span> <a href={userDetails.socialLink} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">{userDetails.socialLink || "N/A"}</a></p>
-                    <p><span className="font-medium">Location:</span> {userDetails.location || "N/A"}</p>
-                    <p><span className="font-medium">Date of Birth:</span> {userDetails.dob || "N/A"}</p>
-                  </div>
-                </>
-              )}
-            </div>
-          </>
-        ) : (
-          <p className="text-center">Loading profile...</p>
-        )}
+          </div>
       </div>
-    </div>
+
+      <EditProfileModal
+        show={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+        data={editData}
+        onChange={handleEditInputChange}
+        onFileChange={handleFileChange}
+        onSave={handleSaveProfile}
+        isSaving={isSaving}
+      />
+    </>
   );
 }
 

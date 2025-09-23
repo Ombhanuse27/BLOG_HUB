@@ -20,6 +20,8 @@ const AddPost = () => {
       try {
         const storedToken = localStorage.getItem("token");
         const storedUserId = localStorage.getItem("userId");
+        console.log("Stored Token:", storedToken);
+        console.log("Stored User ID:", storedUserId);
         if (!storedToken || !storedUserId) throw new Error("Not authenticated");
 
         setToken(storedToken);
@@ -64,7 +66,8 @@ const AddPost = () => {
 
     const postId = `post_${Date.now()}`;
     const timestamp = new Date().toISOString();
-    const fullName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "unknown_user";
+    const fullName = user?.name?.trim() || "Unknown User";
+
 
     const newPost = {
       title: post.title,
