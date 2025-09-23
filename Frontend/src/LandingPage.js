@@ -1,254 +1,254 @@
-// src/LandingPage.js
-import React, { useEffect } from "react";
-import "./LandingPage.css"; // Assuming you put the styles in a separate CSS file
-import chess from "./images/chess.mp4"; // Adjust with your actual filenames
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import "./LandingPage.css";
+
+// --- Asset Imports (ensure these paths are correct for your project) ---
+// Videos
 import cooking from "./images/cooking.mp4";
-import cr7 from "./images/cr7.mp4";
-import central from "./images/central bucharest.mp4";
-import whether from "./images/whether.mp4";
-import vegies from "./images/vegies.mp4";
-import sachin from "./images/sachin.mp4";
-import news from "./images/news.mp4";
 import frying from "./images/frying.mp4";
+import vegies from "./images/vegies.mp4";
+import central from "./images/central bucharest.mp4";
+import news from "./images/news.mp4";
+import whether from "./images/whether.mp4";
+import chess from "./images/chess.mp4";
+import cr7 from "./images/cr7.mp4";
+import sachin from "./images/sachin.mp4";
+
+// Images
 import facebook from "./images/facebook.png";
 import youtube from "./images/youtube.png";
 import twitter from "./images/twitter.png";
 import instagram from "./images/instagram.png";
-import g2 from "./images/g2.jpg";
-import g3 from "./images/g3.jpg";
-import g4 from "./images/g4.jpg";
-import g5 from "./images/g5.jpg";
-import g6 from "./images/g6.jpg";
-import s1 from "./images/s1.jpg";
-import s2 from "./images/s2.jpg";
 
-import m1 from "./images/m1.jpg";
-import m2 from "./images/m2.jpg";
-import m3 from "./images/m3.jpg";
-import m4 from "./images/m4.jpg";
-import m5 from "./images/m5.jpg";
-import m6 from "./images/m6.jpg";
-import m7 from "./images/m7.jpg";
-import m8 from "./images/m8.jpg";
-import m9 from "./images/m9.jpg";
-import m10 from "./images/m10.jpg";
-import jai from "./images/jai.s.webp";
-import r2 from "./images/r2.jpg";
-import mr3 from "./images/r3.jpg";
-import r4 from "./images/r4.jpg";
-import signin from "./components/SignIn";
+// Image Sets for Sliders
+const sliderImages1 = [
+  require("./images/m1.jpg"),
+  require("./images/m2.jpg"),
+  require("./images/m3.jpg"),
+  require("./images/m4.jpg"),
+  require("./images/m5.jpg"),
+  require("./images/m6.jpg"),
+];
 
-const LandingPage = () => {
-  useEffect(() => {
-    const initImageSlider = (sliderId) => {
-      const images = document.querySelectorAll(`#${sliderId} img`);
-      let currentIndex = 0;
+const sliderImages2 = [
+  require("./images/jai.s.webp"),
+  require("./images/g2.jpg"),
+  require("./images/g3.jpg"),
+  require("./images/g4.jpg"),
+  require("./images/g5.jpg"),
+  require("./images/g6.jpg"),
+];
 
-      const changeImage = () => {
-        images[currentIndex].classList.remove("active");
-        currentIndex = (currentIndex + 1) % images.length;
-        images[currentIndex].classList.add("active");
-      };
+const sliderImages3 = [
+  require("./images/s1.jpg"),
+  require("./images/s2.jpg"),
+  // Add more sports images if you have them
+];
+// --------------------------------------------------------------------
 
-      setInterval(changeImage, 5000); // Change image every 5 seconds
-    };
+// Reusable component for the animated video thumbnails
+const VideoPlayer = ({ src }) => {
+  const videoRef = useRef(null);
 
-    initImageSlider("imageSlider1");
-    initImageSlider("imageSlider2");
-
-    const videos = document.querySelectorAll(".chef-video");
-
-    videos.forEach((video) => {
-      video.addEventListener("mouseover", () => {
-        video.play();
-      });
-      video.addEventListener("mouseout", () => {
-        video.pause();
-        video.currentTime = 0;
-      });
-    });
-
-    return () => {
-      videos.forEach((video) => {
-        video.removeEventListener("mouseover", () => {});
-        video.removeEventListener("mouseout", () => {});
-      });
-    };
-  }, []);
-
-  const handleClk = () => { 
-    window.location.href = "/signin";
-  }
+  const handleMouseEnter = () => videoRef.current?.play();
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  };
 
   return (
-    <div>
-      {/* Navbar Section */}
+    <motion.div
+      className="video-wrapper"
+      whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <video ref={videoRef} src={src} muted loop playsInline className="gallery-video" />
+    </motion.div>
+  );
+};
 
-      {/* Landing Section */}
-      <div className="landing">
-        <div className="left-content">
-          <h1>A Passionate Blogging Experience Awaits</h1>
-          <p>
-            Discover delicious recipes, insightful posts, and more in our unique
-            categories, crafted by passionate bloggers like you. Share your
-            passion and inspire others.
-          </p>
+// Reusable component for the image slider
+const ImageSlider = ({ images }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-          {/* Gallery of videos */}
-          <div className="gallery">
-            <video src={cooking} muted loop className="chef-video"></video>
-            <video src={frying} muted loop className="chef-video"></video>
-            <video src={vegies} muted loop className="chef-video"></video>
-          </div>
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 4000); // Change image every 4 seconds
 
-          <h2>More Than Just Blogging</h2>
-          <p className="extra-text">
-            Join our community of writers and share your unique voice with the
-            world. We offer insightful tips, exciting categories, and more to
-            help you on your blogging journey.
-          </p>
-          <button onClick={handleClk}>Explore More</button>
+    return () => clearInterval(interval); // Cleanup on component unmount
+  }, [images.length]);
+
+  return (
+    <div className="image-slider">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={currentIndex}
+          src={images[currentIndex]}
+          alt={`Slide ${currentIndex + 1}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+        />
+      </AnimatePresence>
+    </div>
+  );
+};
+
+
+// Reusable component for the main content sections
+const ContentSection = ({
+  title,
+  paragraph,
+  videos,
+  images,
+  imagePosition = "right",
+  buttonText,
+}) => {
+  const navigate = useNavigate();
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <motion.section
+      className={`content-section ${imagePosition === "left" ? "reverse" : ""}`}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      variants={sectionVariants}
+    >
+      <div className="text-content">
+        <h2>{title}</h2>
+        <p>{paragraph}</p>
+        <div className="gallery">
+          {videos.map((video, index) => (
+            <VideoPlayer key={index} src={video} />
+          ))}
         </div>
-
-        <div className="divider"></div>
-
-        <div className="image-container" id="imageSlider2">
-          <img src={m1} alt="Image 1" className="active" />
-          <img src={m2} alt="Image 2" />
-          <img src={m3} alt="Image 3" />
-          <img src={m4} alt="Image 4" />
-          <img src={m5} alt="Image 5" />
-          <img src={m6} alt="Image 6" />
-        </div>
+        <motion.button
+          onClick={() => navigate("/signin")}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {buttonText}
+        </motion.button>
       </div>
-
-      {/* Second Section */}
-      <div className="landing">
-        <div className="image-container" id="imageSlider1">
-          <img src={jai} alt="Image 1" className="active" />
-          <img src={g2} alt="Image 2" />
-          <img src={g3} alt="Image 3" />
-          <img src={g4} alt="Image 4" />
-          <img src={g5} alt="Image 5" />
-          <img src={g6} alt="Image 6" />
-        </div>
-        <div className="divider"></div>
-
-        <div className="left-content3">
-          <h1>A Journey Through Culinary Delights and Inspiring Stories</h1>
-          <p>
-            Explore a vibrant world of flavors and creativity with passionate
-            bloggers sharing their favorite recipes and unique perspectives.
-            Whether you're a seasoned cook or a beginner, our curated categories
-            have something for everyone. Join us in celebrating the joy of
-            cooking and the art of storytelling!
-          </p>
-
-          <div className="gallery">
-            <video src={central} muted loop className="chef-video"></video>
-            <video src={news} muted loop className="chef-video"></video>
-            <video src={whether} muted loop className="chef-video"></video>
-          </div>
-
-          <h2>More Than Just Blogging</h2>
-          <p className="extra-text">
-            Join our community of writers and share your unique voice with the
-            world. We offer insightful tips, exciting categories, and more to
-            help you on your blogging journey.
-          </p>
-          <button onClick={handleClk}>Explore More</button>
-        </div>
+      <div className="media-content">
+        <ImageSlider images={images} />
       </div>
+    </motion.section>
+  );
+};
 
-      <div className="landing3">
-        <div className="image-container3" id="imageSlider">
-          <img src={s1} alt="Image 1" className="active" />
-          <img src={s2} alt="Image 2" />
-          {/*<img src={s3} alt="Image 3" />
-                    <img src={s4} alt="Image 4" />
-                    <img src={s5} alt="Image 5" />
-                    <img src={s6} alt="Image 6" /> */}
+// Main Landing Page Component
+const LandingPage = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="landing-page">
+      {/* Hero Section */}
+      <header className="hero-section">
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <motion.h1
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            A Passionate Blogging Experience Awaits
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Share your story, discover new passions, and connect with a community of creators.
+          </motion.p>
+          <motion.button
+            onClick={() => navigate("/signin")}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            whileHover={{ scale: 1.05, boxShadow: "0px 10px 30px rgba(0,0,0,0.2)" }}
+            whileTap={{ scale: 0.95 }}
+            className="hero-button"
+          >
+            Get Started
+          </motion.button>
         </div>
+      </header>
 
-        <div className="left-content">
-          <h1>A Journey Through Culinary Delights and Inspiring Stories</h1>
-          <p>
-            Explore a vibrant world of flavors and creativity with passionate
-            bloggers sharing their favorite recipes and unique perspectives.
-            Whether you're a seasoned cook or a beginner, our curated categories
-            have something for everyone. Join us in celebrating the joy of
-            cooking and the art of storytelling!
-          </p>
+      <main>
+        {/* Section 1: Culinary */}
+        <ContentSection
+          title="Culinary Delights & Delicious Recipes"
+          paragraph="Discover a vibrant world of flavors. Our passionate food bloggers share their favorite recipes, cooking tips, and unique culinary perspectives to inspire your next meal."
+          videos={[cooking, frying, vegies]}
+          images={sliderImages1}
+          imagePosition="right"
+          buttonText="Explore Food Blogs"
+        />
 
-          <div className="gallery">
-            <video src={chess} muted loop className="chef-video"></video>
-            <video src={cr7} muted loop className="chef-video"></video>
-            <video src={sachin} muted loop className="chef-video"></video>
-          </div>
+        {/* Section 2: Travel & News */}
+        <ContentSection
+          title="Journeys, Insights & Global Stories"
+          paragraph="From bustling city streets to serene landscapes, explore the world through the eyes of our travel writers. Stay informed with insightful posts on current events and trending news."
+          videos={[central, news, whether]}
+          images={sliderImages2}
+          imagePosition="left"
+          buttonText="Discover New Places"
+        />
 
-          <h2>More Than Just Blogging</h2>
-          <p className="extra-text">
-            Join our community of writers and share your unique voice with the
-            world. We offer insightful tips, exciting categories, and more to
-            help you on your blogging journey.
-          </p>
-          <button onClick={handleClk}>Explore More</button>
-        </div>
-      </div>
+        {/* Section 3: Sports & Strategy */}
+        <ContentSection
+          title="The Thrill of the Game & Winning Strategies"
+          paragraph="Dive into the world of sports. Celebrate legendary athletes, analyze game-winning plays, and sharpen your mind with strategic insights from the world of chess and beyond."
+          videos={[chess, cr7, sachin]}
+          images={sliderImages3}
+          imagePosition="right"
+          buttonText="Join the Game"
+        />
+      </main>
 
       {/* Footer */}
       <footer className="footer">
         <div className="footer-content">
-          <div className="footer-section about">
+          <div className="footer-section">
             <h2>About Us</h2>
-            <p>
-              We are a passionate community of bloggers sharing unique recipes,
-              stories, and insights. Join us on our journey to inspire others
-              through food and creativity!
-            </p>
+            <p>A passionate community of bloggers sharing unique recipes, stories, and insights. Join us to inspire and be inspired!</p>
           </div>
-
-          <div className="footer-section links">
+          <div className="footer-section">
             <h2>Quick Links</h2>
             <ul>
-              <li>
-                <a href="#">Home</a>
-              </li>
-              <li>
-                <a href="#">Categories</a>
-              </li>
-              <li>
-                <a href="#">Write</a>
-              </li>
-              <li>
-                <a href="#">Contact</a>
-              </li>
-              <li>
-                <a href="#">Privacy Policy</a>
-              </li>
+              <li><a href="#">Home</a></li>
+              <li><a href="#">Categories</a></li>
+              <li><a href="#">Write</a></li>
+              <li><a href="#">Contact</a></li>
             </ul>
           </div>
-
-          <div className="footer-section social">
+          <div className="footer-section">
             <h2>Follow Us</h2>
             <div className="social-icons">
-              <a href="#">
-                <img src={facebook} alt="Facebook" />
-              </a>
-              <a href="#">
-                <img src={twitter} alt="Twitter" />
-              </a>
-              <a href="#">
-                <img src={instagram} alt="Instagram" />
-              </a>
-              <a href="#">
-                <img src={youtube} alt="YouTube" />
-              </a>
+              <a href="#"><img src={facebook} alt="Facebook" /></a>
+              <a href="#"><img src={twitter} alt="Twitter" /></a>
+              <a href="#"><img src={instagram} alt="Instagram" /></a>
+              <a href="#"><img src={youtube} alt="YouTube" /></a>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2024 My Blog. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} BlogHub. All rights reserved.</p>
         </div>
       </footer>
     </div>

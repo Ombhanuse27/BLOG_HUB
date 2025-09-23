@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser, getUserById } from "../api/api";
 import "react-toastify/dist/ReactToastify.css";
 
-// Import icons (e.g., from react-icons)
+// Import icons
 import { FcGoogle } from "react-icons/fc";
 import { FiMail, FiLock } from "react-icons/fi";
 
@@ -44,16 +44,20 @@ function SignIn() {
   };
 
   const handleGoogleSignIn = () => {
+    // Ensure the URL is correct for your production/development environment
     window.location.href = "https://blog-hub-ud2n.onrender.com/api/auth/google";
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6">
+
+<div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8 space-y-6">
+
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800">Welcome Back!</h1>
-          <p className="text-gray-500 mt-2">Sign in to continue to your account.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back!</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm">
+            Sign in to continue to your account.
+          </p>
         </div>
 
         {/* Form */}
@@ -63,7 +67,7 @@ function SignIn() {
             <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="email"
-              className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full p-3 pl-10 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Enter email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -76,7 +80,7 @@ function SignIn() {
             <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="password"
-              className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full p-3 pl-10 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -88,7 +92,7 @@ function SignIn() {
           <div>
             <button
               type="submit"
-              className="w-full p-3 text-white bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-400 flex items-center justify-center"
+              className="w-full p-3 text-white bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -102,9 +106,9 @@ function SignIn() {
 
         {/* Separator */}
         <div className="flex items-center justify-center">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-4 text-gray-500 text-sm">OR</span>
-          <div className="flex-grow border-t border-gray-300"></div>
+          <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+          <span className="mx-4 text-gray-500 dark:text-gray-400 text-sm font-medium">OR</span>
+          <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
         </div>
 
         {/* Google Sign-In Button */}
@@ -112,7 +116,7 @@ function SignIn() {
           <button
             type="button"
             onClick={handleGoogleSignIn}
-            className="w-full p-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-3"
+            className="w-full p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
           >
             <FcGoogle size={22} />
             <span>Sign in with Google</span>
@@ -120,14 +124,14 @@ function SignIn() {
         </div>
 
         {/* Registration Link */}
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           New user?{' '}
           <Link to="/register" className="font-semibold text-blue-600 hover:underline">
             Register Here
           </Link>
         </p>
       </div>
-    </div>
+  
   );
 }
 

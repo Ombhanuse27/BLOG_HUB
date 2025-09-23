@@ -19,19 +19,15 @@ import PostDetail from "./components/PostDetail";
 import LandingPage from "./LandingPage";
 import { Navbar } from "./components/Navbar";
 import { Navbar2 } from "./components/Navbar2";
+import { Navbar3 } from "./Navbar3";
 import { getUserById } from "./api/api"; // your backend call
 import GoogleAuthHandler from "./components/GoogleAuthHandler"; // your Google auth handler
 
 const Home = () => (
-  <div className="h-20 px-5 flex items-center justify-between">
-    <h2 className="text-black mt-8  text-2xl font-bold">BLOG_HUB</h2>
-    <div className="flex gap-8">
-      <h4 className="text-black text-xl mt-8 cursor-pointer">Our Story</h4>
-      <Link to="/signin">
-        <h4 className="cursor-pointer mt-8 text-xl text-black">Sign In</h4>
-      </Link>
-    </div>
-  </div>
+  <>
+    <Navbar3 />
+    <LandingPage />
+  </>
 );
 
 const App = () => {
