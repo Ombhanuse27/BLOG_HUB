@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, memo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import userIcon from "../img/user.png";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./PostDetail.css";
 import {
@@ -51,6 +52,9 @@ const getRelativeTime = (timestamp) => {
     return "a moment ago";
   }
 };
+
+
+
 
 
 const Comment = memo(({ comment, isReply = false, currentUser, handlers }) => {
@@ -339,8 +343,10 @@ function PostDetail() {
     if (window.confirm("Do you want to delete the post?")) {
       const res = await deletePostById(postId);
       if (res.success) {
+         navigate("/homepage",{ replace: true });
         alert("Post deleted successfully.");
-        navigate("/homepage");
+
+       
       }
     }
   }, [postId, navigate]);
@@ -387,6 +393,24 @@ function PostDetail() {
         <div className="bg-white p-6 shadow-md rounded-lg max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl lg:text-3xl font-bold">{post.title}</h1>
+            {/* Post options menu */}
+  {currentUser === post.userId && (
+    <div className="relative" ref={menuRef}>
+      <button onClick={() => setShowMenu(!showMenu)} className="text-gray-500 hover:text-gray-800">
+        <FontAwesomeIcon icon={faEllipsisV} size="sm" />
+      </button>
+      {showMenu && (
+        <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow-lg z-20">
+          <button
+            onClick={handleDeletePost}
+            className="flex items-center space-x-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-100 w-full"
+          >
+            <FontAwesomeIcon icon={faTrash} /> <span>Delete</span>
+          </button>
+        </div>
+      )}
+    </div>
+  )}
           </div>
           <div className="flex items-center mb-4">
             <img src={post.userIcon || userIcon} alt="User" className="w-12 h-12 rounded-full mr-4"/>

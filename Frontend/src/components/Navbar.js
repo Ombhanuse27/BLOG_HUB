@@ -1,150 +1,153 @@
-"use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
-import {
-  IconArrowLeft,
-  IconBrandTabler,
-  IconSettings,
-  IconUserBolt,
-} from "@tabler/icons-react";
-import { Link, useNavigate } from "react-router-dom"; // Ensure Link is imported from react-router-dom
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { cn } from "../lib/utils";
+
+// --- 1. IMPORT YOUR CUSTOM ICONS HERE ---
+import customLogo from "../img/logo.png"; // Example: your main logo
+import homeIcon from "../img/home_icon.png";
+import profileIcon from "../img/profile_icon.png";
+import categoryIcon from "../img/categories_icon.png";
+import logoutIcon from "../img/log-out.png";
+import defaultUserPhoto from "../img/loki2.jpg"; // Default user image
 import HomePage from "./HomePage";
-import { Routes, Route } from "react-router-dom";
-import Profile from "./profile";
-import SignIn from "./SignIn";
-import  loki from "../img/loki2.jpg";
-import CategoryPage from "./CategoryPage";
 
-export function Navbar() {
+/**
+ * MainLayout Component
+ * This component serves as the main wrapper for pages that need the sidebar.
+ * It manages the sidebar's state (open/closed) and renders the current page content via <Outlet />.
+ */
+export function MainLayout() {
   const [open, setOpen] = useState(false);
-  const navigate=useNavigate();
+  const [user, setUser] = useState({ name: "User", photo: defaultUserPhoto });
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser({
+          name: parsedUser.name || "User",
+          photo: parsedUser.photo || defaultUserPhoto,
+        });
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e);
+      }
+    }
+  }, []);
+
+  // --- 2. UPDATE THE LINKS ARRAY WITH YOUR ICONS ---
   const links = [
     {
       label: "Home",
-      href: "/homepage", // Corrected Dashboard path
-      icon: (
-        <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
+      href: "/homepage",
+      icon: <img src={homeIcon} alt="Home" className="h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Profile",
-      href: "/profile", // Corrected Profile path
-      icon: (
-        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
+      href: "/profile",
+      icon: <img src={profileIcon} alt="Profile" className="h-5 w-5 flex-shrink-0" />,
     },
     {
-      label: "Category",
-      href: "/CategoryPage", // Corrected Category path
-      icon: (
-        <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "Logout",
-      href: "/signin", // Corrected Logout path
-      icon: (
-        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
+      label: "Categories",
+      href: "/categorypage",
+      icon: <img src={categoryIcon} alt="Categories" className="h-5 w-5 flex-shrink-0" />,
     },
   ];
 
-  return (
-    <div className="flex flex-row w-screen h-screen bg-gray-100 dark:bg-neutral-800">
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("user");
+    navigate("/signin");
+  };
 
-      <Sidebar open={open} setOpen={setOpen} animate={true}>
-        <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            <>
-              <Logo />
-            </>
+  return (
+    <div className="flex flex-row w-screen h-screen bg-zinc-100 dark:bg-zinc-900">
+      <Sidebar open={open} setOpen={setOpen}>
+        <SidebarBody className="justify-between">
+          {/* Top Section: Logo & Main Navigation Links */}
+          <div className="flex flex-col flex-1">
+            <Logo open={open} />
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
-                <Link onClick={()=>{
-                  navigate(link.href)
-                }} href={link.href} key={idx}>
-                  <SidebarLink link={link} />
-                </Link>
+                <NavLink to={link.href} key={idx} className="block">
+                  {({ isActive }) => (
+                    <SidebarLink
+                      isActive={isActive}
+                      link={{ label: link.label, icon: link.icon }}
+                      open={open}
+                    />
+                  )}
+                </NavLink>
               ))}
             </div>
           </div>
+
+          {/* Bottom Section: User Profile & Logout */}
           <div>
-            <SidebarLink
-              link={{
-                label: "Bunny",
-                href: "#",
-                icon: (
-                  <img
-                    src={loki}
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ),
-              }}
-            />
+            <hr className="my-4 border-zinc-200 dark:border-zinc-700" />
+            <UserProfile user={user} open={open} />
+            <div onClick={handleLogout} className="cursor-pointer">
+              <SidebarLink
+                link={{
+                  label: "Logout",
+                  // --- 3. UPDATE THE LOGOUT ICON ---
+                  icon: <img src={logoutIcon} alt="Logout" className="h-5 w-5 flex-shrink-0" />,
+                }}
+                open={open}
+              />
+            </div>
           </div>
         </SidebarBody>
       </Sidebar>
 
-      {/* Defining the routes */}
-      {/* <Routes>
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/navbar" element={<Navbar />} />
-      </Routes> */}
-
-      {/* Rendering HomePage component */}
-      <HomePage />
-      
+      {/* Main Content Area: Renders the active page */}
+      <main className="flex-1 overflow-y-auto">
+        <HomePage/>
+      </main>
     </div>
   );
 }
 
-export const Logo = () => {
+// Logo component updated to use a custom image
+export const Logo = ({ open }) => {
   return (
-    <Link
-      to="/home" // Redirects to home
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+    <NavLink
+      to="/homepage"
+      className="font-normal flex space-x-3 items-center text-sm py-1 relative z-20"
     >
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      {/* --- 4. UPDATE THE LOGO ICON --- */}
+      <img src={customLogo} alt="LetsBlog Logo" className="h-8 w-8 flex-shrink-0" />
       <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium text-black dark:text-white whitespace-pre"
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: open ? 1 : 0, x: open ? 0 : -10 }}
+        transition={{ duration: 0.3 }}
+        className="font-bold text-lg text-black dark:text-white whitespace-nowrap"
       >
-        Lets Blog !!
+        LetsBlog
       </motion.span>
-    </Link>
+    </NavLink>
   );
 };
 
-
-// Dummy dashboard component with content
-// const Dashboard = () => {
-//   return (
-//     <div className="flex flex-1">
-//       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-//         <div className="flex gap-2">
-//           {[...new Array(4)].map((i) => (
-//             <div
-//               key={"first" + i}
-//               className="h-20 w-full rounded-lg  bg-gray-100 dark:bg-neutral-800 animate-pulse"
-//             ></div>
-//           ))}
-//         </div>
-//         <div className="flex gap-2 flex-1">
-//           {[...new Array(2)].map((i) => (
-//             <div
-//               key={"second" + i}
-//               className="h-full w-full rounded-lg  bg-gray-100 dark:bg-neutral-800 animate-pulse"
-//             ></div>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
+// User Profile component (no changes needed here, it already uses an image)
+const UserProfile = ({ user, open }) => (
+  <div className="flex items-center gap-3 px-3 py-2">
+    <img
+      src={user.photo}
+      className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
+      alt="User Avatar"
+    />
+    <span
+      className={`
+        text-sm font-medium text-neutral-700 dark:text-neutral-200 truncate
+        transition-opacity duration-300
+        ${open ? "opacity-100" : "opacity-0"}
+      `}
+    >
+      {user.name}
+    </span>
+  </div>
+);

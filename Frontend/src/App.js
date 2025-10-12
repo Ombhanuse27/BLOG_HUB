@@ -17,7 +17,7 @@ import AddPost from "./components/AddPost";
 import CategoryPage from "./components/CategoryPage";
 import PostDetail from "./components/PostDetail";
 import LandingPage from "./LandingPage";
-import { Navbar } from "./components/Navbar";
+import { MainLayout } from "./components/Navbar";
 import { Navbar2 } from "./components/Navbar2";
 import { Navbar3 } from "./Navbar3";
 import { getUserById } from "./api/api"; // your backend call
@@ -62,15 +62,12 @@ const App = () => {
             token && user ? (
               <Navigate to="/homepage" replace />
             ) : (
-              <div>
-                <Home />
-                <LandingPage />
-              </div>
+               <Home />
             )
           }
         />
 
-        <Route path="/homepage" element={<Navbar user={user} />} />
+        <Route path="/homepage" element={<MainLayout user={user} />} />
         <Route path="/addpost" element={<AddPost user={user} />} />
         <Route path="/post/:postId" element={<PostDetail user={user} />} />
         <Route path="/categorypage" element={<CategoryPage user={user} />} />
@@ -81,7 +78,7 @@ const App = () => {
           path="/signin"
           element={
             <div className="flex justify-center items-center h-screen">
-              <div className="bg-white shadow-md rounded-lg p-8 w-96">
+              <div className="bg-white shadow-md rounded-lg p-8 w-196 border-2 border-blue-500 rounded-2xl">
                 <SignIn setUser={setUser} />
               </div>
             </div>

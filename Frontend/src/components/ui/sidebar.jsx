@@ -50,6 +50,8 @@ export const SidebarBody = (props) => {
   );
 };
 
+
+
 export const DesktopSidebar = ({ className, children, ...props }) => {
   const { open, setOpen, animate } = useSidebar();
   return (
@@ -117,28 +119,44 @@ export const MobileSidebar = ({ className, children, ...props }) => {
     </>
   );
 };
+// src/components/ui/sidebar.js (or wherever it's located)
 
-export const SidebarLink = ({ link, className, ...props }) => {
-  const { open, animate } = useSidebar();
+export const SidebarLink = ({ link, isActive, open }) => {
   return (
-    <Link
-      href={link.href}
+    <div
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2",
-        className
+        "flex items-center justify-start gap-4 rounded-lg px-3 py-2.5 cursor-pointer",
+        "transition-colors duration-200 group relative",
+        isActive
+          ? "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-400"
+          : "text-neutral-600 dark:text-neutral-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
       )}
-      {...props}
     >
-      {link.icon}
-      <motion.span
-        animate={{
-          display: animate ? (open ? "inline-block" : "none") : "inline-block",
-          opacity: animate ? (open ? 1 : 0) : 1,
-        }}
-        className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+      <div className="min-w-[20px]">{link.icon}</div>
+      <span
+        className={cn(
+          "font-medium text-sm overflow-hidden transition-all duration-300 ease-in-out",
+          open ? "max-w-40 opacity-100" : "max-w-0 opacity-0"
+        )}
       >
         {link.label}
-      </motion.span>
-    </Link>
+      </span>
+      {!open && (
+        <div
+          className={cn(
+            "absolute left-full rounded-md px-2 py-1 ml-4",
+            "bg-zinc-800 text-white text-xs",
+            "invisible opacity-0 -translate-x-3 transition-all",
+            "group-hover:visible group-hover:opacity-100 group-hover:translate-x-0",
+            "whitespace-nowrap z-50"
+          )}
+        >
+          {link.label}
+        </div>
+      )}
+    </div>
   );
 };
+
+
+// ... keep the rest of your sidebar.js file the same

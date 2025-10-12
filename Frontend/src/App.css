@@ -36,3 +36,72 @@
     transform: rotate(360deg);
   }
 }
+
+@keyframes fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.5s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+/* Add this to your main CSS file (e.g., index.css) */
+
+.neumorphic-card {
+  background: #2D3748; /* Dark background color for the card */
+  box-shadow: 
+    -7px -7px 15px rgba(60, 60, 60, 0.7), /* Top-left lighter shadow */
+    7px 7px 15px rgba(0, 0, 0, 0.7);     /* Bottom-right darker shadow */
+}
+
+.neumorphic-input {
+  background: #2D3748; /* Match card background */
+  box-shadow: 
+    inset 5px 5px 10px rgba(0, 0, 0, 0.5),   /* Inner dark shadow */
+    inset -5px -5px 10px rgba(60, 60, 60, 0.3); /* Inner light shadow */
+}
+
+.neumorphic-input:focus {
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.4),    /* Less intense inner shadow on focus */
+    inset -2px -2px 5px rgba(60, 60, 60, 0.2), /* Less intense inner shadow on focus */
+    0 0 0 2px #60A5FA; /* Blue focus ring */
+}
+
+.neumorphic-button {
+  background: #2D3748; /* Match card background */
+  color: #60A5FA; /* Blue text for buttons */
+  box-shadow: 
+    -5px -5px 10px rgba(60, 60, 60, 0.7),  /* Top-left lighter shadow */
+    5px 5px 10px rgba(0, 0, 0, 0.7);      /* Bottom-right darker shadow */
+}
+
+.neumorphic-button:hover {
+  color: #93C5FD; /* Lighter blue on hover */
+  box-shadow: 
+    -2px -2px 5px rgba(60, 60, 60, 0.7),  /* Slightly less pronounced hover shadow */
+    2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+.neumorphic-button:active {
+  box-shadow: 
+    inset 3px 3px 7px rgba(0, 0, 0, 0.7),   /* Inset shadow for pressed effect */
+    inset -3px -3px 7px rgba(60, 60, 60, 0.3);
+  color: #93C5FD;
+}

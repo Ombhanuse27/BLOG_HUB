@@ -50,7 +50,12 @@ function SignIn() {
 
   return (
 
-<div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8 space-y-6">
+ 
+
+  <div className="w-[360px] max-w-2xl bg-white rounded-2xl shadow-2xl p-10 space-y-6 border border-blue-500 dark:border-gray-700">
+
+
+
 
         {/* Header */}
         <div className="text-center">
@@ -131,6 +136,8 @@ function SignIn() {
           </Link>
         </p>
       </div>
+   
+      
   
   );
 }

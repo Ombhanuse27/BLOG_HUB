@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./Backend
+    container_name: bloghub-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./Backend/.env
+    volumes:
+      - ./Backend:/app          # Mount host code
+      - /app/node_modules       # Keep container node_modules
+    command: npm start
+    depends_on:
+      - mongo
+
+  frontend:
+    build: ./Frontend
+    container_name: bloghub-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Frontend:/app         # Mount host code
+      - /app/node_modules       # Keep container node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Enable hot reload in Docker
+    command: npm start
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:6
+    container_name: bloghub-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
