@@ -1,8 +1,8 @@
 import axios from "axios";
 
 
- const BASE_URL = "https://blog-hub-ud2n.onrender.com/api"; // Update with your backend URL
-//const BASE_URL = "http://localhost:5000/api"; // Local backend URL for development
+ //const BASE_URL = "https://blog-hub-ud2n.onrender.com/api"; // Update with your backend URL
+const BASE_URL = "http://localhost:5000/api"; // Local backend URL for development
 
 
 const getAuthHeader = () => {
@@ -76,6 +76,16 @@ export const updateFollowedTopics = async (userId, followedTopics, token) => {
   );
 };
 
+// ✅ NEW FUNCTION TO GET A USER'S OWN POSTS
+export const getUserPosts = async (userId, token) => {
+  const res = await axios.get(`${BASE_URL}/users/${userId}/posts`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
 
 export const fetchPostById = async (postId) => {
   const res = await axios.get(`${BASE_URL}/posts/${postId}`);
@@ -105,6 +115,18 @@ export const updateCommentById = async (postId, commentId, content) => {
 
 export const deletePostById = async (postId) => {
   const res = await axios.delete(`${BASE_URL}/posts/${postId}`,getAuthHeader());
+  return res.data;
+};
+
+// ✅ Add this function to your api.js file
+
+export const updatePostById = async (postId, postData, token) => {
+  const res = await axios.put(`${BASE_URL}/posts/${postId}`, postData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
   return res.data;
 };
 

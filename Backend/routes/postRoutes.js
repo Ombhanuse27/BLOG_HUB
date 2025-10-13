@@ -1,8 +1,11 @@
-const express = require('express');
+import { updatePostById } from '../controller/postController.js';
+import express from 'express';
 const router = express.Router();
-const Post = require('../models/Post');
-const User = require('../models/User');
-const authMiddleware = require('../middleware/authMiddleware');
+import User from '../models/User.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+import Post from '../models/Post.js';
+
+
 
 // Get all posts
 router.get('/', authMiddleware, async (req, res) => {
@@ -36,6 +39,9 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+router.put("/:id", updatePostById);
+
 
 // Like/unlike a post
 router.put('/:id/like', authMiddleware, async (req, res) => {
@@ -134,4 +140,5 @@ router.delete('/:postId/comments/:commentId', authMiddleware, async (req, res) =
 
 });
 
-module.exports = router;
+
+export default router; 

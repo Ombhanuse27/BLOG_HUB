@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const axios = require('axios');
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import axios from 'axios';
+import User from '../models/User.js';
 
 
 // GET /api/auth/google
@@ -100,4 +100,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

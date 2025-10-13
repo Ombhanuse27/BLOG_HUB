@@ -1,5 +1,5 @@
 // models/Post.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const postSchema = new mongoose.Schema({
   title: String,
   content: String,
@@ -19,4 +19,5 @@ const postSchema = new mongoose.Schema({
     timestamp: Date
   }]
 }, { timestamps: true });
-module.exports = mongoose.model("Post", postSchema);
+export default mongoose.model("Post", postSchema);
+

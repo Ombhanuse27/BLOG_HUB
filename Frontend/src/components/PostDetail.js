@@ -134,7 +134,7 @@ const Comment = memo(({ comment, isReply = false, currentUser, handlers }) => {
         </div>
         <div className="flex items-center space-x-4 mt-1 text-xs text-gray-500">
           {/* 🐛 FIX: Using the safe helper function to prevent crashes */}
-          <span>{getRelativeTime(comment.createdAt)}</span>
+          <span>{getRelativeTime(comment.timestamp)}</span>
           {!isEditing && (
             <button
               onClick={() => startReplying(comment)}
@@ -341,12 +341,13 @@ function PostDetail() {
   
   const handleDeletePost = useCallback(async () => {
     if (window.confirm("Do you want to delete the post?")) {
-      const res = await deletePostById(postId);
-      if (res.success) {
-         navigate("/homepage",{ replace: true });
-        alert("Post deleted successfully.");
-
-       
+      try {
+        await deletePostById(postId);
+        // ✅ Navigate immediately. The alert() was blocking this.
+        navigate("/homepage", { replace: true }); 
+      } catch (error) {
+        console.error("Failed to delete post:", error);
+        alert("Could not delete the post. Please try again.");
       }
     }
   }, [postId, navigate]);
@@ -401,6 +402,13 @@ function PostDetail() {
       </button>
       {showMenu && (
         <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow-lg z-20">
+          <button
+                onClick={() => navigate(`/edit-post/${postId}`)}
+                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+            >
+                <FontAwesomeIcon icon={faPen} /> <span>Edit</span>
+            </button>
+            
           <button
             onClick={handleDeletePost}
             className="flex items-center space-x-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-100 w-full"

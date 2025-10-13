@@ -1,6 +1,7 @@
 // middleware/authMiddleware.js
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+
 
 const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -16,4 +17,4 @@ const authMiddleware = async (req, res, next) => {
     res.status(401).json({ error: "Invalid token" });
   }
 };
-module.exports = authMiddleware;
+export default authMiddleware;

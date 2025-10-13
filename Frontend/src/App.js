@@ -22,6 +22,7 @@ import { Navbar2 } from "./components/Navbar2";
 import { Navbar3 } from "./Navbar3";
 import { getUserById } from "./api/api"; // your backend call
 import GoogleAuthHandler from "./components/GoogleAuthHandler"; // your Google auth handler
+import EditPost from "./components/EditPost";
 
 const Home = () => (
   <>
@@ -70,6 +71,7 @@ const App = () => {
         <Route path="/homepage" element={<MainLayout user={user} />} />
         <Route path="/addpost" element={<AddPost user={user} />} />
         <Route path="/post/:postId" element={<PostDetail user={user} />} />
+        <Route path="/edit-post/:postId" element={<EditPost user={user} />} />
         <Route path="/categorypage" element={<CategoryPage user={user} />} />
         <Route path="/profile" element={<Navbar2 user={user} />} />
         <Route path="/google-auth" element={<GoogleAuthHandler />} />

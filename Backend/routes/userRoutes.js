@@ -1,8 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const User = require('../models/User');
-const Post = require('../models/Post');
-const authMiddleware = require('../middleware/authMiddleware');
+
+import User from '../models/User.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+import Post from '../models/Post.js';
+
+
 
 // Get user by ID
 router.get("/users/:id", async (req, res) => {
@@ -33,6 +36,22 @@ router.put('/:id/followed-topics', authMiddleware, async (req, res) => {
     res.json({ message: 'Topics updated' });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+router.get('/:userId/posts', authMiddleware, async (req, res) => {
+  try {
+    // Find all posts where the 'userId' field matches the ID from the URL parameters
+    const posts = await Post.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+
+    if (!posts) {
+      return res.status(404).json({ msg: 'No posts found for this user' });
+    }
+
+    res.json(posts);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
@@ -70,4 +89,5 @@ router.get('/:id/saved-posts', authMiddleware, async (req, res) => {
   res.json(user.savedPosts);
 });
 
-module.exports = router;
+
+export default router; 
