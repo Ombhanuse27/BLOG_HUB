@@ -54,6 +54,26 @@ export function MainLayout() {
       href: "/categorypage",
       icon: <img src={categoryIcon} alt="Categories" className="h-5 w-5 flex-shrink-0" />,
     },
+    {
+    label: "Chat Requests",
+    href: "/chat",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="h-5 w-5 flex-shrink-0"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M8.25 9h7.5m-7.5 3.75h4.5M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4.83-1.21L3 20.25l1.46-4.38A7.97 7.97 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+        />
+      </svg>
+    ),
+  },
   ];
 
   const handleLogout = () => {

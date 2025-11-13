@@ -390,9 +390,12 @@ const PostCard = ({ post, savedPosts, handleSavePost, formatDate }) => (
             className="w-10 h-10 rounded-full object-cover"
           />
           <div>
-            <p className="font-semibold text-sm text-gray-800">{post.user || "Unknown User"}</p>
-            <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
-          </div>
+  <Link to={`/user/${post.userId}`} className="font-semibold text-sm text-gray-800 hover:text-sky-600">
+    {post.user || "Unknown User"}
+  </Link>
+  <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
+</div>
+
         </div>
 
         <Link to={`/post/${post.id}`} className="block group">

@@ -18,6 +18,20 @@ router.get("/users/:id", async (req, res) => {
   }
 });
 
+
+// Get user by ID (public)
+router.get("/getuser/:id", async (req, res) => {
+  try {
+    // exclude password
+    const user = await User.findById(req.params.id).select("-password -__v");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Update user
 router.put('/:id', authMiddleware, async (req, res) => {
   try {

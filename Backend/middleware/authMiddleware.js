@@ -9,6 +9,7 @@ const authMiddleware = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = { id: decoded.id};
+    req.userId = decoded.id; 
     const user = await User.findById(req.user.id);
     req.userName = `${user.firstName} ${user.lastName}`;
     req.userIcon = user.photo;

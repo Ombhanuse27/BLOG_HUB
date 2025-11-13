@@ -23,6 +23,11 @@ import { Navbar3 } from "./Navbar3";
 import { getUserById } from "./api/api"; // your backend call
 import GoogleAuthHandler from "./components/GoogleAuthHandler"; // your Google auth handler
 import EditPost from "./components/EditPost";
+import UserProfile from "./components/UserProfile";
+// import ChatWindow from "./components/ChatWindow"; // No longer needed
+import ChatLayout from "./components/ChatLayout";
+// import IncomingChatRequests from "./components/IncomingChatRequests"; // No longer needed
+
 
 const Home = () => (
   <>
@@ -40,8 +45,9 @@ const App = () => {
     const fetchUser = async () => {
       if (token && userId) {
         try {
-          const userData = await getUserById(userId, token);
-          setUser(userData);
+          // Make sure getUserById returns response.data
+          const res = await getUserById(userId, token); 
+          setUser(res.data); // Ensure you're setting the user object, not the whole response
         } catch (err) {
           console.error("Invalid token or user fetch failed", err);
           setUser(null);
@@ -52,7 +58,7 @@ const App = () => {
     };
 
     fetchUser();
-  }, []);
+  }, [token, userId]); // Add token and userId as dependencies
 
   return (
     <Router>
@@ -75,6 +81,17 @@ const App = () => {
         <Route path="/categorypage" element={<CategoryPage user={user} />} />
         <Route path="/profile" element={<Navbar2 user={user} />} />
         <Route path="/google-auth" element={<GoogleAuthHandler />} />
+        <Route path="/user/:id" element={<UserProfile user={user} />} />
+        
+        {/* ======== ROUTING FIX ======== */}
+        {/* REMOVE the old conflicting routes */}
+        {/* <Route path="/chat/:conversationId" element={<ChatWindow />} /> */}
+        {/* <Route path="/chat/requests" element={<IncomingChatRequests />} /> */}
+
+        {/* ADD these two lines. This is all you need. */}
+        <Route path="/chat" element={<ChatLayout />} />
+        <Route path="/chat/:conversationId" element={<ChatLayout />} />
+        {/* ============================= */}
 
         <Route
           path="/signin"

@@ -13,6 +13,14 @@ const getAuthHeader = () => {
 };
 
 
+export const getUserById2 = async (userId, token) => {
+  const res = await axios.get(`${BASE_URL}/getuser/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res; // or `return res.data;` if you want data only — adjust callers accordingly
+};
+
+
 export const registerUser = async (userData) => {
   return await axios.post(`${BASE_URL}/auth/register`, userData);
 };
@@ -176,4 +184,41 @@ export const updateUserById = async (userId, updatedData, token) => {
     },
   });
   return res.data;
+};
+
+// api.js (frontend)
+export const sendChatRequest = async (toUserId) => {
+  const res = await axios.post(`${BASE_URL}/chat/request/${toUserId}`, {}, getAuthHeader());
+  return res.data;
+};
+
+export const getIncomingChatRequests = async () => {
+  const res = await axios.get(`${BASE_URL}/chat/requests/incoming`, getAuthHeader());
+  return res.data;
+};
+
+export const acceptChatRequest = async (requestId) => {
+  const res = await axios.put(`${BASE_URL}/chat/request/${requestId}/accept`, {}, getAuthHeader());
+  return res.data;
+};
+
+export const rejectChatRequest = async (requestId) => {
+  const res = await axios.put(`${BASE_URL}/chat/request/${requestId}/reject`, {}, getAuthHeader());
+  return res.data;
+};
+
+export const getConversation = async (conversationId) => {
+  const res = await axios.get(`${BASE_URL}/chat/conversation/${conversationId}`, getAuthHeader());
+  return res.data;
+};
+
+// 💡 FIX: Make sure these functions send the auth header
+export const getConversations = async () => {
+  const { data } = await axios.get(`${BASE_URL}/chat/conversations`, getAuthHeader());
+  return data;
+};
+
+export const getChatStatus = async (otherUserId) => {
+  const { data } = await axios.get(`${BASE_URL}/chat/status/${otherUserId}`, getAuthHeader());
+  return data;
 };
