@@ -74,16 +74,25 @@ const AddPost = () => {
 
     setIsSubmitting(true); // Start loading
 
+    const selectedCategoryObject = categories.find(cat => cat.categoryId === post.category);
+
+    // Create the final category object for the post
+    // This now perfectly matches your Mongoose schema
+    const finalCategory = {
+      categoryId: selectedCategoryObject?.categoryId || "general",
+      categoryTitle: selectedCategoryObject?.categoryTitle || "General"
+    };
+
     const fullName = user?.name?.trim() || "Unknown User";
+    
     const newPost = {
       title: post.title,
       content: post.content,
-      category: categories.find(cat => cat.categoryId === post.category)?.categoryTitle || "General",
+      category: finalCategory, // ✅ Use the full category object
       userId: user?._id,
       user: fullName,
       timestamp: new Date().toISOString(),
     };
-
     try {
       if (image) {
         const imageUrl = await uploadImageToCloudinary(image);

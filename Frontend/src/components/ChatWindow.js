@@ -4,7 +4,7 @@ import { getConversation } from '../api/api';
 import { useParams } from 'react-router-dom';
 // ... (userIcon import kept)
 
-// const SOCKET_URL = 'http://localhost:5000'; // adjust for prod
+//const SOCKET_URL = 'http://localhost:5000'; // adjust for prod
 
 const SOCKET_URL = 'https://blog-hub-ud2n.onrender.com'; // adjust for prod
 
@@ -98,9 +98,16 @@ const ChatWindow = () => {
             alt="User"
             className="w-10 h-10 rounded-full object-cover"
           />
-          <h3 className="text-lg font-semibold text-gray-800">
-            {otherUserName}
-          </h3>
+          <div className="flex items-center gap-3 px-4 py-3">
+
+  <button
+    onClick={() => window.location.href = `/user/${otherUser?._id}`}
+    className="text-lg font-semibold text-gray-800 hover:text-sky-600 transition cursor-pointer"
+  >
+    {otherUserName}
+  </button>
+</div>
+
         </div>
       </div>
 

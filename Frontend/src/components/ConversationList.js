@@ -77,23 +77,27 @@ const ConversationList = () => {
         // Added more padding and a subtle border
         <div className="p-3 border-b border-gray-200 flex-shrink-0">
           <h5 className="px-1 pb-2 text-sm font-semibold text-gray-700">
-            Chat Requests
+            Chat Section
           </h5>
           <ul className="space-y-2">
             {requests.map(r => (
               // Softer shadow and rounded-lg
               <li key={r._id} className="bg-gray-50 p-3 rounded-lg shadow-sm border border-gray-200">
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={r.from?.photo || userIcon}
-                    alt={userIcon}
-                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <div className="font-medium truncate text-gray-800">{getUserName(r.from)}</div>
-                    <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleDateString()}</div>
-                  </div>
-                </div>
+               <Link
+  to={`/user/${r.from?._id}`}
+  className="flex items-center gap-3 min-w-0 hover:bg-gray-100 p-2 rounded-lg transition"
+>
+  <img
+    src={r.from?.photo || userIcon}
+    alt="User"
+    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+  />
+  <div className="min-w-0">
+    <div className="font-medium truncate text-gray-800">{getUserName(r.from)}</div>
+    <div className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleDateString()}</div>
+  </div>
+</Link>
+
                 {/* --- IMPROVED: Cleaner buttons --- */}
                 <div className="flex gap-2 mt-3 justify-end">
                   <button

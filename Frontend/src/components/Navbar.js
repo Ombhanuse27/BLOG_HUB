@@ -55,7 +55,7 @@ export function MainLayout() {
       icon: <img src={categoryIcon} alt="Categories" className="h-5 w-5 flex-shrink-0" />,
     },
     {
-    label: "Chat Requests",
+    label: "Chat",
     href: "/chat",
     icon: (
       <svg

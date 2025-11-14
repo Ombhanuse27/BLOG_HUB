@@ -16,10 +16,11 @@ import homeIcon from "../img/home_icon.png";
 import profileIcon from "../img/profile_icon.png";
 import categoryIcon from "../img/categories_icon.png";
 import logoutIcon from "../img/log-out.png";
+import ChatLayout from "../components/ChatLayout";
 
 
 
-export function Navbar2() {
+export function Navbar4() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState({ name: "User", photo: defaultUserPhoto });
   const navigate = useNavigate();
@@ -124,7 +125,7 @@ export function Navbar2() {
 
       {/* Main Content Area: Renders the current page */}
       <main className="flex-1 overflow-y-auto">
-        <Profile/>{/* Child routes (HomePage, Profile, etc.) are rendered here */}
+       <ChatLayout/>
       </main>
     </div>
   );

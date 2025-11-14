@@ -423,7 +423,13 @@ function PostDetail() {
           <div className="flex items-center mb-4">
             <img src={post.userIcon || userIcon} alt="User" className="w-12 h-12 rounded-full mr-4"/>
             <div>
-              <p className="font-bold">{post.user || "Unknown User"}</p>
+              <p
+  className="font-bold cursor-pointer hover:underline"
+  onClick={() => navigate(`/user/${post.userId}`)}
+>
+  {post.user || "Unknown User"}
+</p>
+
               {/* 🐛 FIX: Added a check for post.createdAt before formatting */}
               <p className="text-sm text-gray-500">{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : "..."}</p>
             </div>

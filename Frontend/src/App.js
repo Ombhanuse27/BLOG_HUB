@@ -8,7 +8,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import SignIn from "./components/SignIn";
-import SignUp from "./components/register";
+import Register from "./components/register";
 import Profile from "./components/profile";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,8 +25,10 @@ import GoogleAuthHandler from "./components/GoogleAuthHandler"; // your Google a
 import EditPost from "./components/EditPost";
 import UserProfile from "./components/UserProfile";
 // import ChatWindow from "./components/ChatWindow"; // No longer needed
+
 import ChatLayout from "./components/ChatLayout";
 // import IncomingChatRequests from "./components/IncomingChatRequests"; // No longer needed
+import { Navbar4 } from "./components/Navbar4";
 
 
 const Home = () => (
@@ -89,8 +91,8 @@ const App = () => {
         {/* <Route path="/chat/requests" element={<IncomingChatRequests />} /> */}
 
         {/* ADD these two lines. This is all you need. */}
-        <Route path="/chat" element={<ChatLayout />} />
-        <Route path="/chat/:conversationId" element={<ChatLayout />} />
+        <Route path="/chat" element={<Navbar4 user={user}/>} />
+        <Route path="/chat/:conversationId" element={<Navbar4 user={user} />} />
         {/* ============================= */}
 
         <Route
@@ -105,15 +107,16 @@ const App = () => {
         />
 
         <Route
-          path="/register"
-          element={
-            <div className="flex justify-center items-center h-screen">
-              <div className="bg-white shadow-md rounded-lg p-8 w-96">
-                <SignUp />
-              </div>
-            </div>
-          }
-        />
+  path="/register"
+  element={
+    <div className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-800 shadow-2xl border border-blue-500 dark:border-gray-700 rounded-2xl p-10 w-[500px]">
+        <Register />
+      </div>
+    </div>
+  }
+/>
+
       </Routes>
       <ToastContainer />
     </Router>
