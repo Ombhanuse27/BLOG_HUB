@@ -53,6 +53,18 @@ router.put('/:id/followed-topics', authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/getAll", async (req, res) => {
+  try {
+    // 1. Fetch all users
+    // 2. .select("-password") ensures we don't send encrypted passwords to the frontend
+    const users = await User.find().select("-password"); 
+    
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 router.get('/:userId/posts', authMiddleware, async (req, res) => {
   try {
     // Find all posts where the 'userId' field matches the ID from the URL parameters

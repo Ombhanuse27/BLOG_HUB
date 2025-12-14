@@ -94,6 +94,15 @@ export const getUserPosts = async (userId, token) => {
   return res.data;
 };
 
+// ... existing imports and functions ...
+
+// ✅ NEW: Get All Users (for the "Who to Follow" section)
+export const getAllUsers = async (token) => {
+  return await axios.get(`${BASE_URL}/users/getAll`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
 
 export const fetchPostById = async (postId) => {
   const res = await axios.get(`${BASE_URL}/posts/${postId}`);
