@@ -5,13 +5,13 @@ export function Navbar3() {
     <div className="h-20 px-8 flex items-center justify-between bg-white shadow-md">
       {/* Logo */}
       <h2 className="text-black text-3xl font-extrabold tracking-wide">
-        BLOG<span className="text-blue-600">_HUB</span>
+        BLOG<span className="text-blue-600">_Verse</span>
       </h2>
 
       {/* Links */}
       <div className="flex items-center gap-6">
         <h4 className="text-gray-700 text-lg font-medium hover:text-blue-600 transition-colors cursor-pointer">
-          Our Story
+          
         </h4>
 
         <Link to="/signin">

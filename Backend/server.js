@@ -18,7 +18,14 @@ import chatRoutes from "./routes/chat.js";
 dotenv.config();
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://blog-site-azure-ten.vercel.app/"
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // ✅ MongoDB connection

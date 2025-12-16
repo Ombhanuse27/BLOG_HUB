@@ -1,8 +1,8 @@
 import axios from "axios";
 
 
-const BASE_URL = "https://blog-hub-ud2n.onrender.com/api"; // Update with your backend URL
-//const BASE_URL = "http://localhost:5000/api"; // Local backend URL for development
+//const BASE_URL = "https://blog-hub-ud2n.onrender.com/api"; // Update with your backend URL
+const BASE_URL = "http://localhost:5000/api"; // Local backend URL for development
 
 
 const getAuthHeader = () => {
