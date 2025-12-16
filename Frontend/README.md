@@ -1,70 +1,202 @@
-# Getting Started with Create React App
+# 📝 BlogVerse
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+*A modern, Medium‑like blogging platform for creators & readers*
 
-## Available Scripts
+![BlogVerse UI](./assets/blogverse-ui.png)
 
-In the project directory, you can run:
+BlogVerse is a **full‑stack blogging platform** inspired by Medium, designed to provide a clean reading experience and powerful social features for writers. Users can write stories, follow creators, save posts, and discover personalized content through a **"For You" feed**.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## ✨ Platform Overview (Based on UI)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The interface is split into two major sections:
 
-### `npm test`
+### 📰 Main Feed
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+* Clean, card‑based post layout
+* Banner images with smooth hover animations
+* Author info, publish date & reading time
+* Like ❤️, comment 💬, and save 🔖 actions
+* Category tags (AI, Python, Data Science, etc.)
 
-### `npm run build`
+### 📌 Sidebar Widgets
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+* **Reading List** – saved posts for later reading
+* **Top Creators** – trending authors ranked by followers
+* Quick access to popular topics
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 🧭 Navigation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+* "For You" feed based on followed topics
+* Category‑wise filtering
+* Global search for posts & authors
+* Profile dropdown with saved posts & logout
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🚀 Key Features
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 💬 Real-Time Chat (WebSockets)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+* One-to-one and community chat for bloggers
+* Instant message delivery without page refresh
+* Online user presence (connected users)
+* Enables creators to collaborate & stay connected
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 🔐 Authentication
 
-## Learn More
+* JWT‑based authentication
+* OAuth login (Google)
+* Secure protected routes
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### ✍️ Blogging
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+* Create, edit & delete posts
+* Rich‑text editor with HTML content
+* Banner image upload
 
-### Code Splitting
+### 👥 Social Interaction
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+* Follow / unfollow creators
+* Like & comment on posts
+* Save posts to reading list
+* **Real-time chat between bloggers using WebSockets**
 
-### Analyzing the Bundle Size
+### 🎯 Personalization
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+* "For You" feed using followed topics
+* Category‑based content discovery
 
-### Making a Progressive Web App
+### 🖼 Media Support
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+* Banner images via **Cloudinary / Firebase**
+* User profile avatars
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 🛠 Tech Stack
 
-### Deployment
+### Frontend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+* React (CRA)
+* Tailwind CSS
+* React Router
+* Axios
+* Framer Motion (animations)
 
-### `npm run build` fails to minify
+### Backend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+* Node.js
+
+* Express.js
+
+* MongoDB + Mongoose
+
+* JWT Authentication
+
+* OAuth 2.0 (Google)
+
+* **WebSockets (Socket.IO) for real-time chat**
+
+* Node.js
+
+* Express.js
+
+* MongoDB + Mongoose
+
+* JWT Authentication
+
+* OAuth 2.0 (Google)
+
+### DevOps & Deployment
+
+* Docker & Docker Compose
+* Vercel (Frontend)
+* Render (Backend)
+* MongoDB Atlas
+
+---
+
+## 🐳 Dockerized Setup (Recommended)
+
+This project uses **Docker Compose** to run frontend, backend, and database together.
+
+### 📁 Folder Structure
+
+```bash
+BLOGVERSE/
+├── frontend/
+│   ├── Dockerfile
+│   └── ...
+├── backend/
+│   ├── Dockerfile
+│   └── ...
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+### ▶️ Run with Docker Compose
+
+#### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/Ombhanuse27/BLOG_HUB.git
+cd BLOG_HUB
+```
+
+#### 2️⃣ Configure environment variables
+
+**.env**
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_atlas_uri
+JWT_SECRET=your_secret
+BASE_URL=http://localhost:5000/api
+```
+
+#### 3️⃣ Start all services
+
+```bash
+docker-compose up --build
+```
+
+#### 4️⃣ Access the app
+
+* Frontend → [http://localhost:3000](http://localhost:3000)
+* Backend API → [http://localhost:5000/api](http://localhost:5000/api)
+
+---
+
+## 🧪 Run Without Docker (Manual Setup)
+
+### 🔹 Backend
+
+```bash
+cd Backend
+npm install
+npm run dev
+```
+
+### 🔹 Frontend
+
+```bash
+cd Frontend
+npm install
+npm start
+```
+
+
+---
+
+## 👨‍💻 Author
+
+**Om Bhanuse**
+B.Tech CSE | Full‑Stack Developer | MERN | DevOps Enthusiast
+
+---
+
+⭐ *If you like this project, don’t forget to star the repository!*
